@@ -1,0 +1,428 @@
+﻿/* ========================================
+   КАСТОМНЫЕ СТИЛИ ДЛЯ CARDEALERSHIP
+   Цветовая схема: Желтый (#ffc107) + Черный (#000000)
+   ======================================== */
+
+/* ---------- КНОПКИ В СТИЛЕ ЛОГОТИПА ---------- */
+.btn-yellow {
+    background-color: #ffc107;
+    color: #000000;
+    border: none;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+    .btn-yellow:hover {
+        background-color: #ffb300;
+        color: #000000;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .btn-yellow:active {
+        transform: translateY(0);
+    }
+
+.btn-outline-yellow {
+    background-color: transparent;
+    color: #ffc107;
+    border: 2px solid #ffc107;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+    .btn-outline-yellow:hover {
+        background-color: #ffc107;
+        color: #000000;
+        transform: translateY(-2px);
+    }
+    .btn-yellow {
+        background-color: #ffc107;
+        color: #000000;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+
+        .btn-yellow:hover {
+            background-color: #ffb300;
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    .btn-outline-yellow {
+        background-color: transparent;
+        color: #ffc107;
+        border: 2px solid #ffc107;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+
+        .btn-outline-yellow:hover {
+            background-color: #ffc107;
+            color: #000000;
+            transform: translateY(-2px);
+        }
+/* ---------- НАВИГАЦИЯ ---------- */
+.navbar-brand {
+    color: #000000 !important;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+    .navbar-brand:hover {
+        color: #ffc107 !important;
+    }
+
+.nav-link {
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+    .nav-link:hover {
+        color: #ffc107 !important;
+    }
+
+/* ---------- ВЫПАДАЮЩЕЕ МЕНЮ ---------- */
+.dropdown-item {
+    transition: all 0.3s ease;
+}
+
+    .dropdown-item:hover {
+        background-color: #ffc107;
+        color: #000000;
+    }
+
+/* ---------- ФУТЕР ---------- */
+.custom-footer {
+    background-color: #000000;
+    color: #ffffff;
+    margin-top: 50px;
+    padding: 30px 0 20px;
+}
+
+    .custom-footer a {
+        color: #ffc107;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+        .custom-footer a:hover {
+            color: #ffffff;
+        }
+
+.footer-slogan {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+/* ---------- КАРТОЧКИ ТОВАРОВ ---------- */
+.car-card {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+}
+
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .car-card .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+
+.car-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.car-old-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ffc107;
+    color: #000000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* ---------- БАННЕРЫ И ГЕРОЙ ---------- */
+.hero-section {
+    background: linear-gradient(135deg, #ffc107 0%, #000000 100%);
+    color: white;
+    padding: 60px 0;
+    margin-bottom: 40px;
+    border-radius: 20px;
+}
+
+/* ---------- ФИЛЬТРЫ ---------- */
+.brand-filter {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+}
+
+.brand-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.brand-btn {
+    background: white;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+    .brand-btn:hover {
+        background: #ffc107;
+        color: #000000;
+        transform: translateY(-2px);
+    }
+
+/* ---------- СТАТИСТИКА ---------- */
+.stats-badge {
+    background: #f8f9fa;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #495057;
+}
+
+/* ---------- РЕКОМЕНДАЦИИ ---------- */
+.recommendation-title {
+    margin: 40px 0 30px;
+    font-size: 28px;
+    font-weight: 600;
+    position: relative;
+}
+
+    .recommendation-title:after {
+        content: '';
+        display: block;
+        width: 60px;
+        height: 3px;
+        background: #ffc107;
+        margin-top: 10px;
+    }
+
+/* ---------- АДАПТИВНОСТЬ ---------- */
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+
+    .car-card .card-img-top {
+        height: 180px;
+    }
+
+    .brand-buttons {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+}
+
+/* ---------- АНИМАЦИИ ---------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.car-card {
+    animation: fadeIn 0.5s ease-out;
+}
+/* ========================================
+   СТИЛИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ
+   ======================================== */
+
+/* ---------- ГЕРОЙ СЕКЦИЯ ---------- */
+.hero-section {
+    background: linear-gradient(135deg, #ffc107 0%, #000000 100%);
+    padding: 60px 0;
+    margin-bottom: 40px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+}
+
+/* ---------- СЛАЙДЕР ---------- */
+.hero-slider {
+    margin-bottom: 60px;
+}
+
+.carousel-item img {
+    height: 500px;
+    object-fit: cover;
+    filter: brightness(0.7);
+}
+
+.carousel-caption {
+    bottom: 20%;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+    .carousel-caption h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .carousel-caption p {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+/* ---------- КАРТОЧКИ ТОВАРОВ ---------- */
+.car-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .car-card img {
+        height: 200px;
+        object-fit: cover;
+    }
+
+.car-price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.car-old-price {
+    text-decoration: line-through;
+    color: #999;
+    font-size: 0.9rem;
+    margin-right: 10px;
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ffc107;
+    color: #000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 12px;
+    z-index: 10;
+}
+
+/* ---------- ПРОМО БАННЕРЫ ---------- */
+.promo-card {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.3s;
+}
+
+    .promo-card:hover {
+        transform: translateY(-3px);
+    }
+
+/* ---------- ПРЕИМУЩЕСТВА ---------- */
+.feature-icon {
+    font-size: 2.5rem;
+    color: #ffc107;
+    margin-bottom: 15px;
+}
+
+.feature-box {
+    padding: 20px;
+    transition: all 0.3s;
+    border-radius: 10px;
+}
+
+    .feature-box:hover {
+        background: #f8f9fa;
+        transform: translateY(-3px);
+    }
+
+    .feature-box h5 {
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .feature-box p {
+        font-size: 0.9rem;
+    }
+
+/* ---------- АДАПТИВНОСТЬ ---------- */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .carousel-item img {
+        height: 300px;
+    }
+
+    .carousel-caption h1 {
+        font-size: 1.5rem;
+    }
+
+    .carousel-caption p {
+        font-size: 0.9rem;
+    }
+
+    .car-card img {
+        height: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 40px 0;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .feature-box {
+        padding: 15px;
+    }
+}

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace CarDelership.Models
 {
@@ -13,6 +14,7 @@ namespace CarDelership.Models
         public string? Name { get; set; }
 
         [Range(0, 100000)]
+        [Precision(10, 2)]
         public decimal Price { get; set; }
 
         // Навигационное свойство

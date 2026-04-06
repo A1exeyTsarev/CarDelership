@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarDelership.Models
@@ -27,6 +28,7 @@ namespace CarDelership.Models
         public DateTime? CompleteDate { get; set; }
 
         [Range(0, 10000000)]
+        [Precision(18, 2)]
         public decimal TotalAmount { get; set; }
 
         [Required]

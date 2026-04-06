@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 
@@ -38,6 +39,7 @@ namespace CarDelership.Models
         public DateTime RegistrationDate { get; set; }
 
         [Range(0, 100)]
+        [Precision(5, 4)]
         public decimal Discount { get; set; }
 
         [StringLength(50)]
