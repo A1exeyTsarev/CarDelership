@@ -1,0 +1,283 @@
+﻿@model CarDelership.Models.ViewModels.CatalogViewModel
+@{
+    ViewData["Title"] = "Каталог автомобилей";
+}
+
+<div class="container my-4">
+    <h1 class="text-center mb-4">🚗 Каталог автомобилей</h1>
+
+    <div class="row">
+        <!-- БОКОВАЯ ПАНЕЛЬ С ФИЛЬТРАМИ -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-black text-white">
+                    <h5 class="mb-0">🔍 Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index" id="filterForm">
+                        <!-- Поиск -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Поиск</label>
+                            <input type="text" name="searchTerm" class="form-control" 
+                                   placeholder="Название или производитель..." value="@Model.SearchTerm"
+                                   onchange="this.form.submit()">
+                        </div>
+
+                        <!-- Сортировка -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Сортировка</label>
+                            <select name="sortBy" class="form-select" onchange="this.form.submit()">
+                                <option value="name_asc" selected="@(Model.SortBy == "name_asc")">Название (А-Я)</option>
+                                <option value="name_desc" selected="@(Model.SortBy == "name_desc")">Название (Я-А)</option>
+                                <option value="price_asc" selected="@(Model.SortBy == "price_asc")">Цена (сначала дешевле)</option>
+                                <option value="price_desc" selected="@(Model.SortBy == "price_desc")">Цена (сначала дороже)</option>
+                                <option value="year_asc" selected="@(Model.SortBy == "year_asc")">Год (старые сначала)</option>
+                                <option value="year_desc" selected="@(Model.SortBy == "year_desc")">Год (новые сначала)</option>
+                            </select>
+                        </div>
+
+                        <!-- Цена -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Цена (₽)</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" name="minPrice" class="form-control" 
+                                           placeholder="От" value="@Model.MinPrice" onchange="this.form.submit()">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="maxPrice" class="form-control" 
+                                           placeholder="До" value="@Model.MaxPrice" onchange="this.form.submit()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Производитель -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">🏭 Производитель</label>
+                            <select name="selectedManufacturer" class="form-select" onchange="this.form.submit()">
+                                <option value="">Все производители</option>
+                                @foreach (var manufacturer in Model.Manufacturers)
+                                {
+                                    <option value="@manufacturer" selected="@(Model.SelectedManufacturer == manufacturer)">@manufacturer</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Год -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Год выпуска</label>
+                            <select name="selectedYear" class="form-select" onchange="this.form.submit()">
+                                <option value="">Все года</option>
+                                @foreach (var year in Model.Years)
+                                {
+                                    <option value="@year" selected="@(Model.SelectedYear == year)">@year</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Теги -->
+                        @if (Model.Tags != null && Model.Tags.Any())
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Характеристики</label>
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    <div class="form-check">
+                                        <input type="checkbox" name="selectedTagIds" value="@tag.Tag_Id" 
+                                               class="form-check-input" id="tag_@tag.Tag_Id"
+                                               onchange="this.form.submit()"
+                                               @(Model.SelectedTagIds.Contains(tag.Tag_Id) ? "checked" : "")>
+                                        <label class="form-check-label" for="tag_@tag.Tag_Id">@tag.Name</label>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Кнопка сброса -->
+                        <div class="d-grid gap-2">
+                            <a href="/Catalog/Index" class="btn btn-outline-secondary">🔄 Сбросить все</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- РЕЗУЛЬТАТЫ -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Найдено: <strong>@Model.TotalCount</strong> автомобилей</p>
+            </div>
+
+            @if (Model.Cars != null && Model.Cars.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var car in Model.Cars)
+                    {
+                        <div class="col-md-4 col-lg-4">
+                            <div class="card car-card h-100">
+                                <div style="position: relative; height: 200px; overflow: hidden;">
+                                    @{
+                                        var discountPercent = 0;
+                                        if (car.DiscountPrice > 0 && car.DiscountPrice < car.Price)
+                                        {
+                                            discountPercent = (int)((1 - (double)car.DiscountPrice / (double)car.Price) * 100);
+                                        }
+                                    }
+                                    @if (discountPercent > 0)
+                                    {
+                                        <div class="discount-badge">
+                                            -@discountPercent%
+                                        </div>
+                                    }
+
+                                    @{
+                                        var imagePath = "/images/logo.jpg";
+                                        if (car.CarImages != null && car.CarImages.Any())
+                                        {
+                                            imagePath = "/images/" + car.CarImages.First().ImageName;
+                                        }
+                                    }
+                                    <img src="@imagePath" style="width: 100%; height: 100%; object-fit: cover;" alt="@car.Name">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">@car.Name</h5>
+                                    <p class="text-muted small">
+                                        @car.Year г.
+                                        @if (car.Mileage > 0)
+                                        {
+                                            <br>@car.Mileage.ToString("N0") 
+                                        }
+                                    </p>
+                                    <div>
+                                        @if (discountPercent > 0)
+                                        {
+                                            <span class="car-old-price">@car.Price.ToString("N0") ₽</span>
+                                            <br />
+                                            <strong class="car-price">@car.DiscountPrice.ToString("N0") ₽</strong>
+                                        }
+                                        else
+                                        {
+                                            <strong class="car-price">@car.Price.ToString("N0") ₽</strong>
+                                        }
+                                    </div>
+                                    
+                                    @if (car.CarTags != null && car.CarTags.Any())
+                                    {
+                                        <div class="mt-2">
+                                            @foreach (var carTag in car.CarTags.Take(2))
+                                            {
+                                                <span class="badge bg-secondary me-1">@carTag.Tag?.Name</span>
+                                            }
+                                        </div>
+                                    }
+                                    
+                                    <div class="d-flex gap-2 mt-3">
+                                        <a href="/Catalog/Details/@car.Car_Id" class="btn btn-yellow flex-grow-1">Подробнее</a>
+                                        <button class="btn btn-outline-yellow add-to-cart-btn" data-car-id="@car.Car_Id">❤️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- ПАГИНАЦИЯ -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        page = Model.CurrentPage - 1,
+                                        searchTerm = Model.SearchTerm,
+                                        sortBy = Model.SortBy,
+                                        minPrice = Model.MinPrice,
+                                        maxPrice = Model.MaxPrice,
+                                        selectedManufacturer = Model.SelectedManufacturer,
+                                        selectedYear = Model.SelectedYear
+                                    })">« Предыдущая</a>
+                                </li>
+                            }
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        page = i,
+                                        searchTerm = Model.SearchTerm,
+                                        sortBy = Model.SortBy,
+                                        minPrice = Model.MinPrice,
+                                        maxPrice = Model.MaxPrice,
+                                        selectedManufacturer = Model.SelectedManufacturer,
+                                        selectedYear = Model.SelectedYear
+                                    })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { 
+                                        page = Model.CurrentPage + 1,
+                                        searchTerm = Model.SearchTerm,
+                                        sortBy = Model.SortBy,
+                                        minPrice = Model.MinPrice,
+                                        maxPrice = Model.MaxPrice,
+                                        selectedManufacturer = Model.SelectedManufacturer,
+                                        selectedYear = Model.SelectedYear
+                                    })">Следующая »</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info text-center py-5">
+                    <h3>😢 Автомобили не найдены</h3>
+                    <p class="text-muted">Попробуйте изменить параметры фильтрации</p>
+                    <a href="/Catalog/Index" class="btn btn-yellow">Сбросить фильтры</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $('.add-to-cart-btn').click(function(e) {
+            e.stopPropagation();
+            var carId = $(this).data('car-id');
+            var button = $(this);
+
+            $.ajax({
+                url: '/Cart/AddToCart',
+                type: 'POST',
+                data: { carId: carId, quantity: 1 },
+                beforeSend: function() {
+                    button.html('⏳');
+                    button.prop('disabled', true);
+                },
+                success: function(response) {
+                    if (response.success) {
+                        button.html('✓');
+                        setTimeout(function() {
+                            button.html('❤️');
+                            button.prop('disabled', false);
+                        }, 2000);
+                    } else {
+                        button.html('❤️');
+                        button.prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    button.html('❤️');
+                    button.prop('disabled', false);
+                }
+            });
+        });
+    </script>
+}

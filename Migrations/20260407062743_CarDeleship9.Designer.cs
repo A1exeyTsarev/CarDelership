@@ -4,6 +4,7 @@ using CarDelership.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarDelership.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407062743_CarDeleship9")]
+    partial class CarDeleship9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,29 +74,6 @@ namespace CarDelership.Migrations
                     b.ToTable("CarComments");
                 });
 
-            modelBuilder.Entity("CarDelership.Models.CarImages", b =>
-                {
-                    b.Property<int>("Image_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Image_Id"));
-
-                    b.Property<int>("Car_Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ImageName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("Image_Id");
-
-                    b.HasIndex("Car_Id");
-
-                    b.ToTable("CarImages");
-                });
-
             modelBuilder.Entity("CarDelership.Models.CarTags", b =>
                 {
                     b.Property<int>("CarTag_Id")
@@ -125,7 +105,7 @@ namespace CarDelership.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Car_Id"));
 
-                    b.Property<string>("AvailabilityStatus")
+                    b.Property<string>("AvilabilityStatus")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -169,8 +149,6 @@ namespace CarDelership.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Car_Id");
-
-                    b.HasIndex("Color_Id");
 
                     b.HasIndex("model_Id");
 
@@ -495,7 +473,7 @@ namespace CarDelership.Migrations
 
                     b.HasKey("StatusSupply_Id");
 
-                    b.ToTable("StatusSupplies");
+                    b.ToTable("StatusSupply");
                 });
 
             modelBuilder.Entity("CarDelership.Models.Suppliers", b =>
@@ -670,17 +648,6 @@ namespace CarDelership.Migrations
                     b.Navigation("Car");
                 });
 
-            modelBuilder.Entity("CarDelership.Models.CarImages", b =>
-                {
-                    b.HasOne("CarDelership.Models.Cars", "Car")
-                        .WithMany("CarImages")
-                        .HasForeignKey("Car_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Car");
-                });
-
             modelBuilder.Entity("CarDelership.Models.CarTags", b =>
                 {
                     b.HasOne("CarDelership.Models.Cars", "Car")
@@ -702,19 +669,11 @@ namespace CarDelership.Migrations
 
             modelBuilder.Entity("CarDelership.Models.Cars", b =>
                 {
-                    b.HasOne("CarDelership.Models.Color", "Color")
-                        .WithMany()
-                        .HasForeignKey("Color_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("CarDelership.Models.Model", "Model")
                         .WithMany("Cars")
                         .HasForeignKey("model_Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Color");
 
                     b.Navigation("Model");
                 });
@@ -876,8 +835,6 @@ namespace CarDelership.Migrations
             modelBuilder.Entity("CarDelership.Models.Cars", b =>
                 {
                     b.Navigation("CarComments");
-
-                    b.Navigation("CarImages");
 
                     b.Navigation("CarTags");
 

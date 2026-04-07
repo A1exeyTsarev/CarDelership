@@ -1,5 +1,4 @@
-﻿using Azure;
-using CarDelership.Models;
+﻿using CarDelership.Models;
 
 namespace CarDelership.Models.ViewModels
 {
@@ -12,11 +11,11 @@ namespace CarDelership.Models.ViewModels
         public string SortBy { get; set; } = "name_asc";
         public int? MinPrice { get; set; }
         public int? MaxPrice { get; set; }
-        public string SelectedBrand { get; set; } = "";
+        public string SelectedManufacturer { get; set; } = "";  // 👈 ИЗМЕНЕНО
         public int? SelectedYear { get; set; }
 
         // Списки для фильтров
-        public List<string> Brands { get; set; } = new List<string>();
+        public List<string> Manufacturers { get; set; } = new List<string>();  // 👈 ИЗМЕНЕНО
         public List<int> Years { get; set; } = new List<int>();
 
         // Теги

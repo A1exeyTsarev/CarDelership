@@ -1,0 +1,79 @@
+﻿@model CarDelership.Models.Cars
+@{
+    ViewData["Title"] = @Model?.Name;
+}
+
+@if (Model != null)
+{
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-6">
+                <img src="/images/cars/default-car.jpg" class="img-fluid rounded" alt="@Model.Name">
+            </div>
+            <div class="col-md-6">
+                <h1>@Model.Name</h1>
+                <p class="text-muted">Год выпуска: @Model.Year</p>
+
+                @{
+                    var discountPercent = 0;
+                    if (Model.DiscountPrice > 0 && Model.DiscountPrice < Model.Price)
+                    {
+                        discountPercent = (int)((1 - (double)Model.DiscountPrice / (double)Model.Price) * 100);
+                    }
+                }
+
+                @if (discountPercent > 0)
+                {
+                    <p class="text-muted">
+                        <span class="car-old-price">@Model.Price.ToString("N0") ₽</span>
+                        <span class="car-price fs-2 text-danger">@Model.DiscountPrice.ToString("N0") ₽</span>
+                        <span class="badge bg-warning text-dark ms-2">-@discountPercent%</span>
+                    </p>
+                }
+                else
+                {
+                    <p class="car-price fs-2 text-danger">@Model.Price.ToString("N0") ₽</p>
+                }
+
+                <div class="mt-4">
+                    <button class="btn btn-yellow btn-lg w-100 add-to-cart-btn" data-car-id="@Model.Car_Id">
+                        🛒 Добавить в корзину
+                    </button>
+                    <button class="btn btn-outline-yellow btn-lg w-100 mt-2 add-to-wishlist-btn" data-car-id="@Model.Car_Id">
+                        ❤️ Добавить в избранное
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger text-center">
+        <h3>Автомобиль не найден</h3>
+        <a href="/Catalog/Index" class="btn btn-yellow">Вернуться в каталог</a>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        $('.add-to-cart-btn').click(function() {
+            var carId = $(this).data('car-id');
+            var button = $(this);
+
+            $.ajax({
+                url: '/Cart/AddToCart',
+                type: 'POST',
+                data: { carId: carId, quantity: 1 },
+                success: function(response) {
+                    if (response.success) {
+                        button.html('✓ Добавлено в корзину!');
+                        setTimeout(function() {
+                            button.html('🛒 Добавить в корзину');
+                        }, 2000);
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarDelership.Models
 {
-    // Car (Автомобили)
+    // Car (Автомобили) - исправлено имя с Cars на Car
     public class Cars
     {
         [Key]
@@ -29,7 +29,7 @@ namespace CarDelership.Models
         public string? Name { get; set; }
 
         [StringLength(50)]
-        public string? AvilabilityStatus { get; set; }
+        public string? AvailabilityStatus { get; set; }  // ✅ Исправлено
 
         [StringLength(2000)]
         public string? Description { get; set; }
@@ -39,7 +39,8 @@ namespace CarDelership.Models
         [Range(1900, 2026)]
         public int Year { get; set; }
 
-        public int Color_Id { get; set; }
+        [Required]
+        public int Color_Id { get; set; }  // ✅ Добавлен Required
 
         [Range(0, 500000)]
         public int Mileage { get; set; }
@@ -51,10 +52,14 @@ namespace CarDelership.Models
         [ForeignKey("model_Id")]
         public Model? Model { get; set; }
 
+        [ForeignKey("Color_Id")]  // ✅ Добавлена связь с Color
+        public Color? Color { get; set; }
+
         // Навигационные свойства
         public ICollection<CarTags>? CarTags { get; set; }
         public ICollection<ShoppingCart>? ShoppingCarts { get; set; }
         public ICollection<CarComments>? CarComments { get; set; }
         public ICollection<OrderItems>? OrderItems { get; set; }
+        public ICollection<CarImages>? CarImages { get; set; }  // ✅ Добавлена связь с изображениями
     }
 }

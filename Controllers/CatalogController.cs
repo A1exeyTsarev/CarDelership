@@ -3,6 +3,7 @@ using CarDelership.Models;
 using CarDelership.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace CarDelership.Controllers
 {
@@ -15,24 +16,40 @@ namespace CarDelership.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Catalog(string searchTerm, string sortBy,
-            int? minPrice, int? maxPrice, string selectedBrand, int? selectedYear,
-            List<int> selectedTags, int page = 1)
+        // ✅ КАТАЛОГ С ФИЛЬТРАЦИЕЙ
+        public async Task<IActionResult> Index(
+            string searchTerm = "",
+            string sortBy = "name_asc",
+            int? minPrice = null,
+            int? maxPrice = null,
+            string selectedManufacturer = "",
+            int? selectedYear = null,
+            List<int> selectedTagIds = null,
+            int page = 1)
         {
-            var query = _context.Cars
-                .Include(c => c.CarTags)
-                .ThenInclude(ct => ct.Tag)
-                .Where(c => c.Quantity > 0)
-                .AsQueryable();
-
-            // ========== ПОИСК ==========
-            if (!string.IsNullOrEmpty(searchTerm))
+            // Если пользователь не авторизован - отправляем на логин
+            if (!User.Identity.IsAuthenticated)
             {
-                query = query.Where(c => c.Name.Contains(searchTerm));
-                ViewBag.SearchTerm = searchTerm;
+                return RedirectToAction("Login", "Account");
             }
 
-            // ========== ФИЛЬТРАЦИЯ ПО ЦЕНЕ ==========
+            // Базовый запрос
+            var query = _context.Cars
+                .Include(c => c.CarImages)
+                .Include(c => c.Model)
+                    .ThenInclude(m => m.Manufacturer)
+                .Include(c => c.CarTags)
+                    .ThenInclude(ct => ct.Tag)
+                .Where(c => c.Quantity > 0);
+
+            // 🔍 ПОИСК
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(c => c.Name.Contains(searchTerm) ||
+                                         c.Model.Manufacturer.Name.Contains(searchTerm));
+            }
+
+            // 💰 ФИЛЬТР ПО ЦЕНЕ
             if (minPrice.HasValue)
             {
                 query = query.Where(c => c.Price >= minPrice.Value);
@@ -42,109 +59,106 @@ namespace CarDelership.Controllers
                 query = query.Where(c => c.Price <= maxPrice.Value);
             }
 
-            // ========== ФИЛЬТРАЦИЯ ПО БРЕНДУ ==========
-            if (!string.IsNullOrEmpty(selectedBrand))
+            // 🏭 ФИЛЬТР ПО ПРОИЗВОДИТЕЛЮ
+            if (!string.IsNullOrEmpty(selectedManufacturer))
             {
-                query = query.Where(c => c.Name.Contains(selectedBrand));
+                query = query.Where(c => c.Model.Manufacturer.Name == selectedManufacturer);
             }
 
-            // ========== ФИЛЬТРАЦИЯ ПО ГОДУ ==========
+            // 📅 ФИЛЬТР ПО ГОДУ
             if (selectedYear.HasValue)
             {
                 query = query.Where(c => c.Year == selectedYear.Value);
             }
 
-            // ========== ФИЛЬТРАЦИЯ ПО ТЕГАМ ==========
-            if (selectedTags != null && selectedTags.Any())
+            // 🏷️ ФИЛЬТР ПО ТЕГАМ
+            if (selectedTagIds != null && selectedTagIds.Any())
             {
-                query = query.Where(c => c.CarTags.Any(ct => selectedTags.Contains(ct.Tag_Id)));
+                query = query.Where(c => c.CarTags.Any(ct => selectedTagIds.Contains(ct.Tag_Id)));
             }
 
-            // ========== ПОДСЧЕТ ВСЕГО КОЛИЧЕСТВА ==========
-            var totalCount = await query.CountAsync();
-
-            // ========== СОРТИРОВКА ==========
+            // 📊 СОРТИРОВКА
             switch (sortBy)
             {
+                case "name_asc":
+                    query = query.OrderBy(c => c.Name);
+                    break;
+                case "name_desc":
+                    query = query.OrderByDescending(c => c.Name);
+                    break;
                 case "price_asc":
                     query = query.OrderBy(c => c.Price);
                     break;
                 case "price_desc":
                     query = query.OrderByDescending(c => c.Price);
                     break;
-                case "year_desc":
-                    query = query.OrderByDescending(c => c.Year);
-                    break;
                 case "year_asc":
                     query = query.OrderBy(c => c.Year);
                     break;
-                case "name_asc":
+                case "year_desc":
+                    query = query.OrderByDescending(c => c.Year);
+                    break;
                 default:
                     query = query.OrderBy(c => c.Name);
                     break;
             }
 
-            // ========== ПАГИНАЦИЯ ==========
+            // 📄 ПАГИНАЦИЯ
+            int totalCount = await query.CountAsync();
             int pageSize = 12;
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
             var cars = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            // ========== ПОЛУЧАЕМ СПИСКИ ДЛЯ ФИЛЬТРОВ ==========
-            // Сначала получаем все автомобили
-            var allCars = await _context.Cars.ToListAsync();
-
-            // Обрабатываем бренды в памяти (исправленная часть)
-            var brands = allCars
-                .Select(c => c.Name.Split(' ').FirstOrDefault() ?? "")
-                .Distinct()
-                .Where(b => !string.IsNullOrEmpty(b))
-                .OrderBy(b => b)
-                .ToList();
-
-            var years = await _context.Cars
-                .Select(c => c.Year)
-                .Distinct()
-                .OrderByDescending(y => y)
-                .ToListAsync();
-
+            // 📋 ПОЛУЧАЕМ СПИСКИ ДЛЯ ФИЛЬТРОВ
+            var manufacturers = await _context.Manufacturers.Select(m => m.Name).Distinct().ToListAsync();
+            var years = await _context.Cars.Select(c => c.Year).Distinct().OrderByDescending(y => y).ToListAsync();
             var tags = await _context.Tags.ToListAsync();
 
-            // ========== СОЗДАЕМ VIEWMODEL ==========
+            // ✅ СОЗДАЕМ ViewModel
             var viewModel = new CatalogViewModel
             {
                 Cars = cars,
-                SearchTerm = searchTerm ?? "",
-                SortBy = sortBy ?? "name_asc",
+                SearchTerm = searchTerm,
+                SortBy = sortBy,
                 MinPrice = minPrice,
                 MaxPrice = maxPrice,
-                SelectedBrand = selectedBrand ?? "",
+                SelectedManufacturer = selectedManufacturer,
                 SelectedYear = selectedYear,
-                Brands = brands,
+                SelectedTagIds = selectedTagIds ?? new List<int>(),
+                Manufacturers = manufacturers,
                 Years = years,
                 Tags = tags,
-                SelectedTagIds = selectedTags ?? new List<int>(),
                 CurrentPage = page,
-                TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
-                PageSize = pageSize
+                TotalPages = totalPages,
+                PageSize = pageSize,
+                TotalCount = totalCount
             };
 
             return View(viewModel);
         }
 
+        // ✅ ДЕТАЛЬНАЯ СТРАНИЦА ТОВАРА
         public async Task<IActionResult> Details(int id)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var car = await _context.Cars
+                .Include(c => c.CarImages)
+                .Include(c => c.Model)
+                    .ThenInclude(m => m.Manufacturer)
                 .Include(c => c.CarTags)
-                .ThenInclude(ct => ct.Tag)
+                    .ThenInclude(ct => ct.Tag)
                 .FirstOrDefaultAsync(c => c.Car_Id == id);
 
             if (car == null)
-            {
                 return NotFound();
-            }
 
             return View(car);
         }
