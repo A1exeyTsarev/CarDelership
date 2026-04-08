@@ -1,0 +1,121 @@
+﻿<!-- Views/Profile/Index.cshtml -->
+@model CarDelership.Models.Users
+@{
+    ViewData["Title"] = "Личный кабинет";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Боковое меню -->
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="bg-dark rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                            <span class="text-white fs-1">👤</span>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold">@Model.FullName</h5>
+                    <p class="text-muted small">@Model.Login</p>
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <a href="/Profile/Index" class="btn btn-yellow btn-sm">
+                            <i class="bi bi-person"></i> Личный кабинет
+                        </a>
+                        <a href="/Profile/Orders" class="btn btn-outline-yellow btn-sm">
+                            <i class="bi bi-box-seam"></i> Мои заказы
+                        </a>
+                        <a href="/Wishlist" class="btn btn-outline-yellow btn-sm">
+                            <i class="bi bi-heart"></i> Избранное (@ViewBag.WishlistCount)
+                        </a>
+                        <a href="/Cart" class="btn btn-outline-yellow btn-sm">
+                            <i class="bi bi-cart"></i> Корзина (@ViewBag.CartCount)
+                        </a>
+                        <a href="/Profile/Edit" class="btn btn-outline-yellow btn-sm">
+                            <i class="bi bi-pencil-square"></i> Редактировать профиль
+                        </a>
+                        <hr>
+                        <a href="/Account/Logout" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Выйти
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <!-- Основная информация -->
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-info-circle text-warning"></i> Информация о пользователе
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small">ФИО</label>
+                            <p class="fw-bold mb-0">@Model.FullName</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small">Логин</label>
+                            <p class="fw-bold mb-0">@Model.Login</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small">Телефон</label>
+                            <p class="fw-bold mb-0">@(Model.Phone ?? "Не указан")</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small">Email</label>
+                            <p class="fw-bold mb-0">@(Model.Email ?? "Не указан")</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small">Дата регистрации</label>
+                            <p class="fw-bold mb-0">@Model.RegistrationDate.ToString("dd.MM.yyyy")</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <label class="text-muted small">Персональная скидка</label>
+                            <p class="fw-bold text-warning mb-0">@Model.Discount%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm border-0 rounded-3">
+                        <div class="card-body">
+                            <h3 class="text-warning fw-bold">@ViewBag.TotalOrders</h3>
+                            <p class="text-muted mb-0">Выполненных заказов</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm border-0 rounded-3">
+                        <div class="card-body">
+                            <h3 class="text-warning fw-bold">@ViewBag.WishlistCount</h3>
+                            <p class="text-muted mb-0">В избранном</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center shadow-sm border-0 rounded-3">
+                        <div class="card-body">
+                            <h3 class="text-warning fw-bold">@ViewBag.CartCount</h3>
+                            <p class="text-muted mb-0">Товаров в корзине</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show position-fixed bottom-0 end-0 m-3 shadow" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}

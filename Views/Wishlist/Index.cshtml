@@ -1,0 +1,109 @@
+﻿<!-- Views/Wishlist/Index.cshtml -->
+@model IEnumerable<CarDelership.Models.Wishlist>
+@{
+    ViewData["Title"] = "Избранное";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <a href="/Profile" class="btn btn-outline-primary w-100 mb-2">← Назад в профиль</a>
+                    <hr>
+                    <a href="/Profile/Orders" class="btn btn-outline-secondary w-100 mb-2">📦 Мои заказы</a>
+                    <a href="/Wishlist" class="btn btn-primary w-100 mb-2">❤️ Избранное (@Model.Count())</a>
+                    <a href="/Cart" class="btn btn-outline-secondary w-100 mb-2">🛒 Корзина</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Избранные автомобили (@Model.Count())</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <h3 class="text-muted">❤️ У вас пока нет избранных автомобилей</h3>
+                            <a href="/Catalog" class="btn btn-primary mt-3">Перейти в каталог</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @foreach (var item in Model)
+                            {
+                                var car = item.Car;
+                                var image = car?.CarImages?.FirstOrDefault();
+                                var price = car?.DiscountPrice > 0 ? car.DiscountPrice : car?.Price;
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="row g-0">
+                                            <div class="col-md-4">
+                                                @if (image != null)
+                                                {
+                                                    <img src="/images/cars/@image.ImageName" class="img-fluid rounded-start" alt="@car?.Name" style="height: 120px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                                        <span class="text-muted">Нет фото</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">@car?.Name</h6>
+                                                    <p class="card-text text-primary fw-bold">@price?.ToString("N0") ₽</p>
+                                                    <div class="btn-group w-100">
+                                                        <button class="btn btn-sm btn-danger remove-from-wishlist" data-car-id="@car?.Car_Id">
+                                                            ❌ Удалить
+                                                        </button>
+                                                        <button class="btn btn-sm btn-success add-to-cart" data-car-id="@car?.Car_Id">
+                                                            🛒 В корзину
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.remove-from-wishlist').click(function() {
+                var carId = $(this).data('car-id');
+                var btn = $(this);
+                
+                $.post('/Wishlist/Remove', { carId: carId }, function(result) {
+                    if (result.success) {
+                        btn.closest('.col-md-6').fadeOut();
+                        location.reload();
+                    }
+                });
+            });
+            
+            $('.add-to-cart').click(function() {
+                var carId = $(this).data('car-id');
+                
+                $.post('/Cart/Add', { carId: carId, quantity: 1 }, function(result) {
+                    if (result.success) {
+                        alert('Товар добавлен в корзину');
+                    }
+                });
+            });
+        });
+    </script>
+}

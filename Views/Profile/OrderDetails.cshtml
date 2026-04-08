@@ -1,0 +1,91 @@
+﻿<!-- Views/Profile/OrderDetails.cshtml -->
+@model CarDelership.Models.Orders
+@{
+    ViewData["Title"] = $"Заказ №{Model.OrderNumber}";
+    var orderItems = ViewBag.OrderItems as List<CarDelership.Models.OrderItems>;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <a href="/Profile/Orders" class="btn btn-outline-primary w-100">← Все заказы</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Заказ № @Model.OrderNumber</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Информация о заказе -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Информация о заказе</h6>
+                            <p class="mb-1">Дата: @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
+                            <p class="mb-1">
+                                Статус:
+                                <span class="badge bg-@(Model.OrderStatus?.Name == "Завершен" ? "success" :
+                                                                                                                         Model.OrderStatus?.Name == "Отменен" ? "danger" : "warning")">
+                                    @Model.OrderStatus?.Name
+                                </span>
+                            </p>
+                            <p class="mb-1">Доставка: @Model.DeliveryMethod?.Name</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Стоимость</h6>
+                            <p class="mb-1">Сумма заказа: @Model.TotalAmount.ToString("N0") ₽</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Товары в заказе -->
+                    <h6>Состав заказа</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Фото</th>
+                                    <th>Автомобиль</th>
+                                    <th>Кол-во</th>
+                                    <th>Цена</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in orderItems)
+                                {
+                                    var car = item.Car;
+                                    var image = car?.CarImages?.FirstOrDefault();
+                                    <tr>
+                                        <td>
+                                            @if (image != null)
+                                            {
+                                                <img src="/images/cars/@image.ImageName" alt="@car?.Name" style="width: 60px; height: 45px; object-fit: cover;">
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 45px;">
+                                                    <span class="text-muted small">Нет фото</span>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            <strong>@car?.Name</strong><br>
+                                            <small class="text-muted">@car?.Model?.Manufacturer?.Name @car?.Model?.Name</small>
+                                        </td>
+                                        <td>@item.Quantity шт.</td>
+                                        <td>@item.PriceAtPurchase.ToString("N0") ₽</td>
+                                        <td>@((item.PriceAtPurchase * item.Quantity).ToString("N0")) ₽</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

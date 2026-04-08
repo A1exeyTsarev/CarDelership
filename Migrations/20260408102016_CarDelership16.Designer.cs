@@ -4,6 +4,7 @@ using CarDelership.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarDelership.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408102016_CarDelership16")]
+    partial class CarDelership16
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -651,32 +654,6 @@ namespace CarDelership.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CarDelership.Models.Wishlist", b =>
-                {
-                    b.Property<int>("Wishlist_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Wishlist_Id"));
-
-                    b.Property<DateTime>("AddedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Car_Id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("User_Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("Wishlist_Id");
-
-                    b.HasIndex("Car_Id");
-
-                    b.HasIndex("User_Id");
-
-                    b.ToTable("Wishlists");
-                });
-
             modelBuilder.Entity("CarDelership.Models.CarComments", b =>
                 {
                     b.HasOne("CarDelership.Models.Users", "Author")
@@ -894,25 +871,6 @@ namespace CarDelership.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("CarDelership.Models.Wishlist", b =>
-                {
-                    b.HasOne("CarDelership.Models.Cars", "Car")
-                        .WithMany()
-                        .HasForeignKey("Car_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CarDelership.Models.Users", "User")
-                        .WithMany("Wishlists")
-                        .HasForeignKey("User_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Car");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("CarDelership.Models.BodyType", b =>
                 {
                     b.Navigation("Models");
@@ -998,8 +956,6 @@ namespace CarDelership.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("ShoppingCarts");
-
-                    b.Navigation("Wishlists");
                 });
 #pragma warning restore 612, 618
         }

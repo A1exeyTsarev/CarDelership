@@ -1,0 +1,68 @@
+﻿<!-- Views/Profile/Orders.cshtml -->
+@model IEnumerable<CarDelership.Models.Orders>
+@{
+    ViewData["Title"] = "Мои заказы";
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Боковое меню -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <a href="/Profile" class="btn btn-outline-primary w-100 mb-2">← Назад в профиль</a>
+                    <hr>
+                    <a href="/Profile/Orders" class="btn btn-primary w-100 mb-2">📦 Мои заказы</a>
+                    <a href="/Wishlist" class="btn btn-outline-secondary w-100 mb-2">❤️ Избранное</a>
+                    <a href="/Cart" class="btn btn-outline-secondary w-100 mb-2">🛒 Корзина</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">История заказов</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <h3 class="text-muted">📦 У вас пока нет заказов</h3>
+                            <a href="/Catalog" class="btn btn-primary mt-3">Перейти в каталог</a>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var order in Model)
+                        {
+                            <div class="border rounded mb-3 p-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        <strong>Заказ № @order.OrderNumber</strong>
+                                        <br>
+                                        <small class="text-muted">от @order.CreatedDate.ToString("dd.MM.yyyy")</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <span class="badge bg-@(order.OrderStatus?.Name == "Завершен" ? "success" :
+                                                                                                                                                 order.OrderStatus?.Name == "Отменен" ? "danger" : "warning")">
+                                            @order.OrderStatus?.Name
+                                        </span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>@order.TotalAmount.ToString("N0") ₽</strong>
+                                    </div>
+                                    <div class="col-md-2 text-end">
+                                        <a href="/Profile/OrderDetails/@order.Order_Id" class="btn btn-sm btn-outline-primary">
+                                            Подробнее →
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -21,6 +21,8 @@ namespace CarDelership.Data
         public DbSet<DeliveryMethods> DeliveryMethods { get; set; }
         public DbSet<StatusSupply> StatusSupplies { get; set; }
 
+        public DbSet<Wishlist> Wishlists { get; set; }
+
         // Производители и модели
         public DbSet<Manufacturers> Manufacturers { get; set; }
         public DbSet<Model> Models { get; set; }

@@ -53,5 +53,6 @@ namespace CarDelership.Models
         public ICollection<Orders>? Orders { get; set; }
         public ICollection<ShoppingCart>? ShoppingCarts { get; set; }
         public ICollection<CarComments>? CarComments { get; set; }
+        public ICollection<Wishlist>? Wishlists { get; set; }
     }
 }

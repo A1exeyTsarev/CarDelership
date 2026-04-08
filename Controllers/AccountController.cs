@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿// Controllers/AccountController.cs (добавьте сохранение UserId в сессию)
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,14 +34,15 @@ namespace CarDelership.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Ищем пользователя в БД
                 var user = await _context.Users
                     .Include(u => u.Role)
                     .FirstOrDefaultAsync(u => u.Login == model.Login && u.IsActive);
 
-                if (user != null && user.Password == model.Password) // В реальном проекте используйте хеширование!
+                if (user != null && user.Password == model.Password)
                 {
-                    // Создаем claims (утверждения) для пользователя
+                    // Сохраняем ID пользователя в сессию
+                    HttpContext.Session.SetInt32("UserId", user.User_Id);
+
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
@@ -62,7 +64,6 @@ namespace CarDelership.Controllers
                         new ClaimsPrincipal(claimsIdentity),
                         authProperties);
 
-                    // Перенаправляем на нужную страницу
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                         return Redirect(returnUrl);
 
@@ -89,7 +90,6 @@ namespace CarDelership.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Проверяем, существует ли пользователь с таким логином
                 var existingUser = await _context.Users
                     .FirstOrDefaultAsync(u => u.Login == model.Login);
 
@@ -99,16 +99,15 @@ namespace CarDelership.Controllers
                     return View(model);
                 }
 
-                // Создаем нового пользователя
                 var user = new Users
                 {
                     Login = model.Login,
-                    Password = model.Password, // В реальном проекте хешируйте!
+                    Password = model.Password,
                     FullName = model.FullName,
                     Phone = model.Phone,
                     Email = model.Email,
                     PassportData = model.PassportData,
-                    Role_Id = 3, // Роль "Клиент"
+                    Role_Id = 3,
                     IsActive = true,
                     RegistrationDate = DateTime.Now,
                     Discount = 0
@@ -117,7 +116,9 @@ namespace CarDelership.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                // Автоматически входим после регистрации
+                // Сохраняем ID в сессию
+                HttpContext.Session.SetInt32("UserId", user.User_Id);
+
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
@@ -141,6 +142,9 @@ namespace CarDelership.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            // Очищаем сессию
+            HttpContext.Session.Clear();
+
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }

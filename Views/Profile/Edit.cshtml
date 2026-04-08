@@ -1,0 +1,55 @@
+﻿<!-- Views/Profile/Edit.cshtml -->
+@model CarDelership.Models.Users
+@{
+    ViewData["Title"] = "Редактирование профиля";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">✏️ Редактирование профиля</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="User_Id" />
+                        <input type="hidden" asp-for="Login" />
+                        <input type="hidden" asp-for="Password" />
+                        <input type="hidden" asp-for="Role_Id" />
+                        <input type="hidden" asp-for="IsActive" />
+                        <input type="hidden" asp-for="RegistrationDate" />
+                        <input type="hidden" asp-for="Discount" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">ФИО *</label>
+                            <input asp-for="FullName" class="form-control" required />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label">Телефон</label>
+                            <input asp-for="Phone" class="form-control" placeholder="+7 (XXX) XXX-XX-XX" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <small>Для смены пароля обратитесь к администратору.</small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/Profile" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

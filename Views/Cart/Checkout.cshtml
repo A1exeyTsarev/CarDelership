@@ -1,0 +1,82 @@
+﻿<!-- Views/Cart/Checkout.cshtml -->
+@{
+    ViewData["Title"] = "Оформление заказа";
+    var deliveryMethods = ViewBag.DeliveryMethods as IEnumerable<CarDelership.Models.DeliveryMethods>;
+    var cartItems = ViewBag.CartItems as IEnumerable<CarDelership.Models.ShoppingCart>;
+    decimal subtotal = ViewBag.Subtotal ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">📝 Оформление заказа</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="checkoutForm">
+                        @Html.AntiForgeryToken()
+                        
+                        <h6>Способ доставки</h6>
+                        @foreach (var method in deliveryMethods)
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input delivery-method" type="radio"
+                                       name="deliveryMethodId" value="@method.DeliveryMethods_Id"
+                                       id="delivery_@method.DeliveryMethods_Id"
+                                       data-price="@method.Price">
+                                <label class="form-check-label" for="delivery_@method.DeliveryMethods_Id">
+                                    @method.Name - @method.Price.ToString("N0") ₽
+                                </label>
+                            </div>
+                        }
+                        
+                        <hr>
+                        <button type="submit" class="btn btn-success w-100">Подтвердить заказ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">💰 Стоимость заказа</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Товары:</span>
+                        <span id="subtotal">@subtotal.ToString("N0")</span> ₽
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Доставка:</span>
+                        <span id="delivery-price">0</span> ₽
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Итого:</span>
+                        <span id="total" class="text-primary fs-5">@subtotal.ToString("N0")</span> ₽
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let subtotal = @subtotal;
+            
+            $('.delivery-method').change(function() {
+                let deliveryPrice = parseInt($(this).data('price')) || 0;
+                let total = subtotal + deliveryPrice;
+                
+                $('#delivery-price').text(deliveryPrice.toLocaleString());
+                $('#total').text(total.toLocaleString());
+            });
+            
+            $('.delivery-method:first').prop('checked', true).trigger('change');
+        });
+    </script>
+}

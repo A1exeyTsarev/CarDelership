@@ -11,7 +11,20 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// НАСТРОЙКА АУТЕНТИФИКАЦИИ - ДОБАВИТЬ ЭТОТ БЛОК
+// ДОБАВЬТЕ: Поддержка сессий
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = "CarDealershipSession";
+});
+
+// ДОБАВЬТЕ: HttpContextAccessor для доступа к сессии в представлениях
+builder.Services.AddHttpContextAccessor();
+
+// НАСТРОЙКА АУТЕНТИФИКАЦИИ
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -31,7 +44,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -40,10 +52,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// ВАЖНО: ПОРЯДОК ИМЕЕТ ЗНАЧЕНИЕ!
-// Сначала аутентификация, потом авторизация
-app.UseAuthentication();  // ДОБАВИТЬ ЭТУ СТРОКУ
-app.UseAuthorization();   // ЭТА СТРОКА УЖЕ ЕСТЬ
+// ВАЖНО: ПРАВИЛЬНЫЙ ПОРЯДОК МИДЛВАРОВ
+app.UseSession();           // Сначала сессии
+app.UseAuthentication();    // Потом аутентификация
+app.UseAuthorization();     // Затем авторизация
 
 app.MapControllerRoute(
     name: "default",

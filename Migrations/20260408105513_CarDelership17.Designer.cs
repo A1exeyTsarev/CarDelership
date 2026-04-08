@@ -4,6 +4,7 @@ using CarDelership.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarDelership.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408105513_CarDelership17")]
+    partial class CarDelership17
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -651,7 +654,7 @@ namespace CarDelership.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("CarDelership.Models.Wishlist", b =>
+            modelBuilder.Entity("CarDelership.Models.ViewModels.Wishlist", b =>
                 {
                     b.Property<int>("Wishlist_Id")
                         .ValueGeneratedOnAdd()
@@ -894,7 +897,7 @@ namespace CarDelership.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("CarDelership.Models.Wishlist", b =>
+            modelBuilder.Entity("CarDelership.Models.ViewModels.Wishlist", b =>
                 {
                     b.HasOne("CarDelership.Models.Cars", "Car")
                         .WithMany()

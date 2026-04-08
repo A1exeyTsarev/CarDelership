@@ -1,0 +1,133 @@
+﻿<!-- Views/Cart/Index.cshtml -->
+@model IEnumerable<CarDelership.Models.ShoppingCart>
+@{
+    ViewData["Title"] = "Корзина";
+    decimal total = ViewBag.Total ?? 0;
+}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">🛒 Корзина (@Model.Count() товаров)</h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <h3 class="text-muted">🛒 Ваша корзина пуста</h3>
+                            <a href="/Catalog" class="btn btn-primary mt-3">Перейти в каталог</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Товар</th>
+                                        <th>Цена</th>
+                                        <th>Кол-во</th>
+                                        <th>Сумма</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        var car = item.Car;
+                                        var price = car?.DiscountPrice > 0 ? car.DiscountPrice : car?.Price;
+                                        var subtotal = price * item.Quantity;
+                                        <tr data-cart-id="@item.ShoppingCart_Id">
+                                            <td>
+                                                <strong>@car?.Name</strong><br>
+                                                <small class="text-muted">@car?.Model?.Manufacturer?.Name</small>
+                                            </td>
+                                            <td>@price?.ToString("N0") ₽</td>
+                                            <td>
+                                                <input type="number" class="form-control quantity-input"
+                                                       style="width: 70px;" value="@item.Quantity" min="1"
+                                                       data-cart-id="@item.ShoppingCart_Id" data-price="@price">
+                                            </td>
+                                            <td class="subtotal">@subtotal?.ToString("N0") ₽</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-danger remove-item" data-cart-id="@item.ShoppingCart_Id">
+                                                    🗑️
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <td colspan="3" class="text-end"><strong>Итого:</strong></td>
+                                        <td colspan="2"><strong id="total-amount">@total.ToString("N0")</strong> ₽</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Оформление заказа</h5>
+                </div>
+                <div class="card-body">
+                    <p>Общая сумма: <strong class="text-primary">@total.ToString("N0") ₽</strong></p>
+                    <a href="/Cart/Checkout" class="btn btn-success w-100 @(!Model.Any() ? "disabled" : "")">
+                        Оформить заказ →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            function updateTotal() {
+                let total = 0;
+                $('.subtotal').each(function() {
+                    let value = $(this).text().replace('₽', '').replace(/\s/g, '');
+                    total += parseInt(value) || 0;
+                });
+                $('#total-amount').text(total.toLocaleString());
+            }
+            
+            $('.quantity-input').change(function() {
+                let cartId = $(this).data('cart-id');
+                let quantity = $(this).val();
+                let price = $(this).data('price');
+                let row = $(this).closest('tr');
+                
+                $.post('/Cart/Update', { cartId: cartId, quantity: quantity }, function(result) {
+                    if (result.success) {
+                        let subtotal = price * quantity;
+                        row.find('.subtotal').text(subtotal.toLocaleString() + ' ₽');
+                        updateTotal();
+                    }
+                });
+            });
+            
+            $('.remove-item').click(function() {
+                let cartId = $(this).data('cart-id');
+                let row = $(this).closest('tr');
+                
+                $.post('/Cart/Remove', { cartId: cartId }, function(result) {
+                    if (result.success) {
+                        row.fadeOut(function() { $(this).remove(); updateTotal(); });
+                        if ($('tbody tr').length === 0) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}
