@@ -186,7 +186,7 @@ namespace CarDelership.Controllers
         // POST: /Cart/Checkout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(int deliveryMethodId)
+        public async Task<IActionResult> Checkout(int? deliveryMethodId)
         {
             var userId = GetCurrentUserId();
             if (userId == null)
@@ -204,47 +204,56 @@ namespace CarDelership.Controllers
                 return RedirectToAction("Index");
             }
 
-            var deliveryMethod = await _context.DeliveryMethods.FindAsync(deliveryMethodId);
-            decimal deliveryPrice = deliveryMethod?.Price ?? 0;
-            decimal subtotal = 0;
+            // Вычисляем сумму корзины ОДИН РАЗ
+            var cartTotal = cartItems.Sum(item =>
+                (item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0) * item.Quantity);
 
-            foreach (var item in cartItems)
+            // Проверка выбора способа доставки
+            if (!deliveryMethodId.HasValue || deliveryMethodId == 0)
             {
-                var price = item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0;
-                subtotal += price * item.Quantity;
+                await PrepareCheckoutViewWithError(cartItems, cartTotal, "Пожалуйста, выберите способ доставки");
+                return View();
             }
 
-            decimal total = subtotal + deliveryPrice;
+            // Проверка существования метода доставки
+            var deliveryMethod = await _context.DeliveryMethods
+                .FirstOrDefaultAsync(d => d.DeliveryMethods_Id == deliveryMethodId);
 
-            // Получаем статус "Новый"
+            if (deliveryMethod == null)
+            {
+                await PrepareCheckoutViewWithError(cartItems, cartTotal, "Выбранный способ доставки не существует");
+                return View();
+            }
+
+            // Создаем заказ
+            var orderTotal = cartTotal + deliveryMethod.Price;
             var newStatus = await _context.OrderStatuses.FirstOrDefaultAsync(s => s.Name == "Новый");
 
             var order = new Orders
             {
                 OrderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmss}",
                 OrderStatus_Id = newStatus?.OrderStatus_Id ?? 1,
-                OrderMethod_Id = 2, // Онлайн
-                DeliveryMethod_Id = deliveryMethodId,
+                OrderMethod_Id = 2,
+                DeliveryMethod_Id = deliveryMethodId.Value,
                 CreatedDate = DateTime.Now,
-                TotalAmount = total,
+                TotalAmount = orderTotal,
                 User_Id = userId.Value
             };
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Добавляем товары в заказ и уменьшаем количество на складе
+            // Добавляем товары в заказ и очищаем корзину
             foreach (var item in cartItems)
             {
                 var price = item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0;
-                var orderItem = new OrderItems
+                _context.OrderItems.Add(new OrderItems
                 {
                     Order_Id = order.Order_Id,
                     Car_Id = item.Car_Id,
                     Quantity = item.Quantity,
                     PriceAtPurchase = price
-                };
-                _context.OrderItems.Add(orderItem);
+                });
 
                 if (item.Car != null)
                 {
@@ -252,12 +261,20 @@ namespace CarDelership.Controllers
                 }
             }
 
-            // Очищаем корзину
             _context.ShoppingCarts.RemoveRange(cartItems);
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Заказ успешно оформлен!";
             return RedirectToAction("OrderDetails", "Profile", new { id = order.Order_Id });
+        }
+
+        // Вспомогательный метод для подготовки представления с ошибкой
+        private async Task PrepareCheckoutViewWithError(List<ShoppingCart> cartItems, decimal cartTotal, string errorMessage)
+        {
+            ViewBag.DeliveryMethods = await _context.DeliveryMethods.ToListAsync();
+            ViewBag.CartItems = cartItems;
+            ViewBag.Subtotal = cartTotal;
+            ModelState.AddModelError("", errorMessage);
         }
     }
 }

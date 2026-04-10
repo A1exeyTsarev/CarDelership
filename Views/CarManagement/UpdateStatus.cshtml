@@ -1,0 +1,78 @@
+﻿@model CarDelership.Models.Cars
+@{
+    ViewData["Title"] = "Изменение статуса товара";
+    var statuses = ViewBag.AvailabilityStatuses as List<string>;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2" style="color: #ffc107;"></i>
+                        Изменение статуса товара
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="UpdateStatus">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="carId" value="@Model.Car_Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Товар</label>
+                            <h5>@Model.Name</h5>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Текущий статус</label>
+                            <div>
+                                @{
+                                    var currentClass = Model.AvailabilityStatus switch
+                                    {
+                                        "В наличии" => "bg-success",
+                                        "Под заказ" => "bg-warning",
+                                        "Нет в наличии" => "bg-danger",
+                                        "Скоро в продаже" => "bg-info",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @currentClass fs-6">@Model.AvailabilityStatus</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Новый статус</label>
+                            <select name="availabilityStatus" class="form-select" required>
+                                <option value="">Выберите статус</option>
+                                @foreach (var status in statuses)
+                                {
+                                    <option value="@status" selected="@(status == Model.AvailabilityStatus)">
+                                        @status
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Количество на складе</label>
+                            <input type="number" name="quantity" class="form-control" value="@Model.Quantity" min="0" />
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-yellow">
+                                <i class="bi bi-save"></i> Сохранить
+                            </button>
+                            <a href="/CarManagement/Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

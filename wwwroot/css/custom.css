@@ -1,6 +1,4 @@
-﻿/* wwwroot/css/custom.css */
-
-/* ========================================
+﻿/* ========================================
    ОСНОВНЫЕ СТИЛИ В ЖЕЛТО-ЧЕРНОМ СТИЛЕ
    ======================================== */
 
@@ -173,6 +171,62 @@
         transform: translateY(-3px);
     }
 
+/* ---------- СТИЛИ ДЛЯ СТРАНИЦЫ ОФОРМЛЕНИЯ ЗАКАЗА ---------- */
+/* Стили для способов доставки */
+.delivery-methods-list .form-check {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .delivery-methods-list .form-check:hover {
+        border-color: #ffc107 !important;
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+    }
+
+.delivery-method:checked + label {
+    color: #ffc107;
+}
+
+/* Стили для радиокнопок */
+.form-check-input:checked {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.form-check-input:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+/* Стили для карточек */
+.card {
+    border-radius: 15px !important;
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+/* Анимация для ошибок */
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.alert-danger {
+    animation: shake 0.3s ease-in-out;
+}
+
 /* ---------- АДАПТИВНОСТЬ ---------- */
 @media (max-width: 768px) {
     .hero-title {
@@ -182,4 +236,53 @@
     .car-card img {
         height: 180px;
     }
+
+    /* Стили для страницы оформления заказа */
+    .fs-3 {
+        font-size: 1.5rem !important;
+    }
+
+    .form-check.mb-3 {
+        padding: 0.75rem !important;
+    }
+}
+/* Стили для комментариев */
+.comment-item {
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+    .comment-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+.delete-comment-btn {
+    transition: all 0.3s ease;
+}
+
+    .delete-comment-btn:hover {
+        transform: scale(1.05);
+    }
+
+#commentText:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.comment-item {
+    animation: slideIn 0.3s ease-out;
 }

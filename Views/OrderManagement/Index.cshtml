@@ -1,0 +1,81 @@
+﻿@model IEnumerable<CarDelership.Models.Orders>
+@{
+    ViewData["Title"] = "Управление заказами";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-truck me-2" style="color: #ffc107;"></i>
+                Управление заказами
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>№ заказа</th>
+                            <th>Клиент</th>
+                            <th>Дата</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr>
+                                <td>@order.OrderNumber</td>
+                                <td>@order.User?.FullName</td>
+                                <td>@order.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                <td>@order.TotalAmount.ToString("N0") ₽</td>
+                                <td>
+                                    @{
+                                        var statusClass = order.OrderStatus?.Name switch
+                                        {
+                                            "Новый" => "bg-primary",
+                                            "Подтвержден" => "bg-info",
+                                            "В обработке" => "bg-warning",
+                                            "Отправлен" => "bg-info",
+                                            "Доставлен" => "bg-success",
+                                            "Отменен" => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @statusClass">@order.OrderStatus?.Name</span>
+                                </td>
+                                <td>
+                                    <a href="/OrderManagement/Details/@order.Order_Id" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i> Детали
+                                    </a>
+                                    <a href="/OrderManagement/UpdateStatus/@order.Order_Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil"></i> Изменить статус
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

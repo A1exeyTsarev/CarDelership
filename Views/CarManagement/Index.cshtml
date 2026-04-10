@@ -1,0 +1,74 @@
+﻿@model IEnumerable<CarDelership.Models.Cars>
+@{
+    ViewData["Title"] = "Управление товарами";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-car-front me-2" style="color: #ffc107;"></i>
+                Управление товарами
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Фото</th>
+                            <th>Название</th>
+                            <th>Цена</th>
+                            <th>Количество</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var car in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@(car.CarImages?.FirstOrDefault()?.ImageName != null ? $"/images/{car.CarImages.First().ImageName}" : "/images/logo.jpg")"
+                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
+                                </td>
+                                <td>@car.Name</td>
+                                <td>@car.Price.ToString("N0") ₽</td>
+                                <td>@car.Quantity</td>
+                                <td>
+                                    @{
+                                        var statusClass = car.AvailabilityStatus switch
+                                        {
+                                            "В наличии" => "bg-success",
+                                            "Под заказ" => "bg-warning",
+                                            "Нет в наличии" => "bg-danger",
+                                            "Скоро в продаже" => "bg-info",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @statusClass">@car.AvailabilityStatus</span>
+                                </td>
+                                <td>
+                                    <a href="/CarManagement/UpdateStatus/@car.Car_Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil"></i> Изменить статус
+                                    </a>
+                                    <a href="/CarManagement/Edit/@car.Car_Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-edit"></i> Редактировать
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

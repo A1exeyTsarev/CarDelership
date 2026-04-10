@@ -1,0 +1,68 @@
+﻿@model CarDelership.Models.Orders
+@{
+    ViewData["Title"] = "Изменение статуса заказа";
+    var statuses = ViewBag.OrderStatuses as IEnumerable<CarDelership.Models.OrderStatuses>;
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-pencil-square me-2" style="color: #ffc107;"></i>
+                        Изменение статуса заказа №@Model.OrderNumber
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="UpdateStatus">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="orderId" value="@Model.Order_Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Текущий статус</label>
+                            <div>
+                                <span class="badge bg-secondary fs-6">@Model.OrderStatus?.Name</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Новый статус</label>
+                            <select name="orderStatusId" class="form-select" required>
+                                <option value="">Выберите статус</option>
+                                @foreach (var status in statuses)
+                                {
+                                    <option value="@status.OrderStatus_Id" selected="@(status.OrderStatus_Id == Model.OrderStatus_Id)">
+                                        @status.Name
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Информация о заказе</label>
+                            <div class="border rounded p-3 bg-light">
+                                <p class="mb-1"><strong>Клиент:</strong> @Model.User?.FullName</p>
+                                <p class="mb-1"><strong>Сумма:</strong> @Model.TotalAmount.ToString("N0") ₽</p>
+                                <p class="mb-1"><strong>Дата создания:</strong> @Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
+                                <p class="mb-0"><strong>Способ доставки:</strong> @Model.DeliveryMethod?.Name</p>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-yellow">
+                                <i class="bi bi-save"></i> Сохранить
+                            </button>
+                            <a href="/OrderManagement/Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

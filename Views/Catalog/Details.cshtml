@@ -1,8 +1,10 @@
-﻿<!-- Views/Catalog/Details.cshtml -->
-@model CarDelership.Models.Cars
+﻿@model CarDelership.Models.Cars
 @{
     ViewData["Title"] = Model?.Name ?? "Автомобиль";
 }
+
+<!-- Генерация AntiForgeryToken -->
+@Html.AntiForgeryToken()
 
 @if (Model != null)
 {
@@ -12,10 +14,9 @@
                 <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
                     @{
                         var mainImage = Model.CarImages?.FirstOrDefault();
-                        // Картинки хранятся в wwwroot/images/
                         string imagePath = mainImage != null && !string.IsNullOrEmpty(mainImage.ImageName)
-                            ? $"/images/{mainImage.ImageName}"
-                            : "/images/logo.jpg";
+                        ? $"/images/{mainImage.ImageName}"
+                        : "/images/logo.jpg";
                     }
                     <img src="@imagePath"
                          class="img-fluid"
@@ -24,10 +25,10 @@
                          onerror="this.src='/images/logo.jpg'" />
                 </div>
             </div>
-            
+
             <div class="col-md-6">
                 <h1 class="fw-bold mb-3">@Model.Name</h1>
-                
+
                 <div class="mb-3">
                     <span class="badge bg-secondary">@Model.Year год</span>
                     <span class="badge bg-secondary ms-2">@Model.Mileage.ToString("N0") км</span>
@@ -40,9 +41,9 @@
                         <span class="badge bg-warning ms-2">@Model.AvailabilityStatus</span>
                     }
                 </div>
-                
+
                 <hr>
-                
+
                 <div class="row mb-4">
                     <div class="col-6">
                         <small class="text-muted">Производитель</small>
@@ -77,9 +78,9 @@
                         <p class="fw-bold mb-0">@(Model.VIN ?? "Не указан")</p>
                     </div>
                 </div>
-                
+
                 <hr>
-                
+
                 @{
                     var discountPercent = 0;
                     if (Model.DiscountPrice > 0 && Model.DiscountPrice < Model.Price)
@@ -87,7 +88,7 @@
                         discountPercent = (int)((1 - (double)Model.DiscountPrice / (double)Model.Price) * 100);
                     }
                 }
-                
+
                 @if (discountPercent > 0)
                 {
                     <div class="mb-3">
@@ -102,7 +103,7 @@
                         <span class="fs-1 text-warning fw-bold">@Model.Price.ToString("N0") ₽</span>
                     </div>
                 }
-                
+
                 <div class="mt-4">
                     <button class="btn btn-yellow btn-lg w-100 add-to-cart-btn" data-car-id="@Model.Car_Id">
                         <i class="bi bi-cart-plus"></i> Добавить в корзину
@@ -113,7 +114,7 @@
                 </div>
             </div>
         </div>
-        
+
         @if (!string.IsNullOrEmpty(Model.Description))
         {
             <div class="row mt-5">
@@ -131,7 +132,41 @@
                 </div>
             </div>
         }
-        
+
+        <!-- БЛОК ОТЗЫВОВ -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-chat-dots text-warning"></i> Отзывы
+                            <span id="commentsCount" class="badge bg-secondary ms-2">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Форма добавления комментария -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Оставить отзыв</label>
+                            <textarea id="commentText" class="form-control mb-2" rows="3"
+                                  placeholder="Поделитесь своим мнением об автомобиле..."></textarea>
+                            <button id="submitCommentBtn" class="btn btn-yellow" data-car-id="@Model.Car_Id">
+                                <i class="bi bi-send"></i> Отправить отзыв
+                            </button>
+                        </div>
+
+                        <hr>
+
+                        <!-- Список комментариев -->
+                        <div id="commentsList">
+                            <div class="text-center text-muted py-3">
+                                <i class="bi bi-chat-dots"></i> Загрузка отзывов...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row mt-4">
             <div class="col-12">
                 <a href="/Catalog" class="btn btn-outline-yellow">
@@ -154,15 +189,199 @@ else
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var carId = @Model.Car_Id;
+
+            // Функция загрузки комментариев
+            function loadComments() {
+                $.ajax({
+                    url: '/Comment/GetComments',
+                    type: 'GET',
+                    data: { carId: carId },
+                    success: function(comments) {
+                        $('#commentsCount').text(comments.length);
+
+                        if (comments.length === 0) {
+                            $('#commentsList').html(`
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-chat-dots fs-1"></i>
+                                    <p class="mt-2">Пока нет отзывов. Будьте первым!</p>
+                                </div>
+                            `);
+                            return;
+                        }
+
+                        var html = '';
+                        for (var i = 0; i < comments.length; i++) {
+                            var comment = comments[i];
+                            html += `
+                                <div class="comment-item mb-3 p-3 border rounded" id="comment-${comment.id}">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong class="fw-bold">
+                                                <i class="bi bi-person-circle"></i> ${escapeHtml(comment.authorName)}
+                                            </strong>
+                                            <small class="text-muted ms-2">${comment.createdAt}</small>
+                                        </div>
+                                        ${comment.isOwner ? `
+                                            <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="${comment.id}">
+                                                <i class="bi bi-trash"></i> Удалить
+                                            </button>
+                                        ` : ''}
+                                    </div>
+                                    <p class="mb-0">${escapeHtml(comment.commentText)}</p>
+                                </div>
+                            `;
+                        }
+                        $('#commentsList').html(html);
+                    },
+                    error: function() {
+                        $('#commentsList').html(`
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Ошибка загрузки отзывов
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            // Функция экранирования HTML
+            function escapeHtml(text) {
+                if (!text) return '';
+                var map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+            // Отправка комментария
+            $('#submitCommentBtn').click(function() {
+                var commentText = $('#commentText').val().trim();
+
+                if (!commentText) {
+                    showCommentError('Пожалуйста, введите текст отзыва');
+                    return;
+                }
+
+                if (commentText.length > 2000) {
+                    showCommentError('Отзыв не должен превышать 2000 символов');
+                    return;
+                }
+
+                var button = $(this);
+                var originalHtml = button.html();
+                button.html('<i class="bi bi-hourglass-split"></i> Отправка...');
+                button.prop('disabled', true);
+
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/Comment/Add',
+                    type: 'POST',
+                    data: {
+                        carId: carId,
+                        commentText: commentText
+                    },
+                    headers: {
+                        'RequestVerificationToken': token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#commentText').val('');
+                            loadComments();
+                            showCommentSuccess('Отзыв успешно добавлен!');
+                        } else {
+                            showCommentError(response.message || 'Ошибка при добавлении отзыва');
+                        }
+                        button.html(originalHtml);
+                        button.prop('disabled', false);
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Ошибка при добавлении отзыва';
+                        if (xhr.status === 401) {
+                            errorMessage = 'Необходимо войти в систему';
+                            setTimeout(function() {
+                                window.location.href = '/Account/Login';
+                            }, 2000);
+                        }
+                        showCommentError(errorMessage);
+                        button.html(originalHtml);
+                        button.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Удаление комментария
+            $(document).on('click', '.delete-comment-btn', function() {
+                var commentId = $(this).data('comment-id');
+                var button = $(this);
+
+                if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+                    button.html('<i class="bi bi-hourglass-split"></i>');
+                    button.prop('disabled', true);
+
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '/Comment/Delete',
+                        type: 'POST',
+                        data: { commentId: commentId },
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                loadComments();
+                                showCommentSuccess('Отзыв удален');
+                            } else {
+                                showCommentError(response.message || 'Ошибка при удалении');
+                                button.html('<i class="bi bi-trash"></i> Удалить');
+                                button.prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            showCommentError('Ошибка при удалении отзыва');
+                            button.html('<i class="bi bi-trash"></i> Удалить');
+                            button.prop('disabled', false);
+                        }
+                    });
+                }
+            });
+
+            // Функции для отображения сообщений
+            function showCommentError(message) {
+                var errorDiv = $('<div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">' +
+                    '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>');
+                $('#submitCommentBtn').after(errorDiv);
+                setTimeout(function() { errorDiv.fadeOut('slow', function() { $(this).remove(); }); }, 5000);
+            }
+
+            function showCommentSuccess(message) {
+                var successDiv = $('<div class="alert alert-success alert-dismissible fade show mt-2" role="alert">' +
+                    '<i class="bi bi-check-circle-fill me-2"></i>' + message +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>');
+                $('#submitCommentBtn').after(successDiv);
+                setTimeout(function() { successDiv.fadeOut('slow', function() { $(this).remove(); }); }, 3000);
+            }
+
+            // Загружаем комментарии при загрузке страницы
+            loadComments();
+
             // Добавление в корзину
             $('.add-to-cart-btn').click(function() {
                 var carId = $(this).data('car-id');
                 var button = $(this);
                 var originalHtml = button.html();
-                
+
                 button.html('<i class="bi bi-hourglass-split"></i> Добавляется...');
                 button.prop('disabled', true);
-                
+
                 $.ajax({
                     url: '/Cart/Add',
                     type: 'POST',
@@ -171,7 +390,7 @@ else
                         if (response.success) {
                             button.html('<i class="bi bi-check-circle"></i> Добавлено в корзину!');
                             button.removeClass('btn-yellow').addClass('btn-success');
-                            
+
                             setTimeout(function() {
                                 button.html(originalHtml);
                                 button.removeClass('btn-success').addClass('btn-yellow');
@@ -195,16 +414,16 @@ else
                     }
                 });
             });
-            
+
             // Добавление в избранное
             $('.add-to-wishlist-btn').click(function() {
                 var carId = $(this).data('car-id');
                 var button = $(this);
                 var originalHtml = button.html();
-                
+
                 button.html('<i class="bi bi-hourglass-split"></i> Добавляется...');
                 button.prop('disabled', true);
-                
+
                 $.ajax({
                     url: '/Wishlist/Add',
                     type: 'POST',

@@ -1,5 +1,4 @@
-﻿// Controllers/AccountController.cs (добавьте сохранение UserId в сессию)
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -43,13 +42,17 @@ namespace CarDelership.Controllers
                     // Сохраняем ID пользователя в сессию
                     HttpContext.Session.SetInt32("UserId", user.User_Id);
 
+                    // Сохраняем роль пользователя в сессию (русские названия)
+                    string userRole = user.Role?.Name ?? "Клиент";
+                    HttpContext.Session.SetString("UserRole", userRole);
+
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
-                        new Claim(ClaimTypes.Name, user.FullName),
+                        new Claim(ClaimTypes.Name, user.FullName ?? user.Login),
                         new Claim(ClaimTypes.Email, user.Email ?? ""),
                         new Claim("Login", user.Login),
-                        new Claim(ClaimTypes.Role, user.Role?.Name ?? "Клиент")
+                        new Claim(ClaimTypes.Role, userRole)
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -107,7 +110,7 @@ namespace CarDelership.Controllers
                     Phone = model.Phone,
                     Email = model.Email,
                     PassportData = model.PassportData,
-                    Role_Id = 3,
+                    Role_Id = 3, // ID роли "Клиент"
                     IsActive = true,
                     RegistrationDate = DateTime.Now,
                     Discount = 0
@@ -119,10 +122,13 @@ namespace CarDelership.Controllers
                 // Сохраняем ID в сессию
                 HttpContext.Session.SetInt32("UserId", user.User_Id);
 
+                // Сохраняем роль в сессию
+                HttpContext.Session.SetString("UserRole", "Клиент");
+
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.FullName),
+                    new Claim(ClaimTypes.Name, user.FullName ?? user.Login),
                     new Claim(ClaimTypes.Email, user.Email ?? ""),
                     new Claim("Login", user.Login),
                     new Claim(ClaimTypes.Role, "Клиент")
@@ -145,7 +151,10 @@ namespace CarDelership.Controllers
             // Очищаем сессию
             HttpContext.Session.Clear();
 
+            // Выход из системы
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            TempData["Success"] = "Вы успешно вышли из системы";
             return RedirectToAction("Index", "Home");
         }
 
@@ -154,6 +163,20 @@ namespace CarDelership.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+        // GET: /Account/CheckSession (для отладки)
+        [HttpGet]
+        public IActionResult CheckSession()
+        {
+            return Json(new
+            {
+                userId = HttpContext.Session.GetInt32("UserId"),
+                userRole = HttpContext.Session.GetString("UserRole"),
+                isAuthenticated = User.Identity.IsAuthenticated,
+                userName = User.Identity.Name,
+                roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value)
+            });
         }
     }
 }
