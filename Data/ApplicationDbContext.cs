@@ -25,7 +25,7 @@ namespace CarDelership.Data
 
         // Производители и модели
         public DbSet<Manufacturers> Manufacturers { get; set; }
-        public DbSet<Model> Models { get; set; }
+        public DbSet<CarModels> Models { get; set; }
 
         // Основные сущности
         public DbSet<Cars> Cars { get; set; }
@@ -42,5 +42,8 @@ namespace CarDelership.Data
         public DbSet<CarComments> CarComments { get; set; }
         public DbSet<CarTags> CarTags { get; set; }
         public DbSet<CarImages> CarImages { get; set; }  // Изображения
+
+        // Обратная связь (ДОБАВЬТЕ ЭТУ СТРОКУ)
+        public DbSet<Feedback> Feedbacks { get; set; }
     }
 }

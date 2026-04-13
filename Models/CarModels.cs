@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace CarDelership.Models
 {
     // Model (Модели авто)
-    public class Model
+    public class CarModels
     {
         [Key]
         public int Model_Id { get; set; }

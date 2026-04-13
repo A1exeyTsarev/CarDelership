@@ -246,38 +246,3 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $('.add-to-cart-btn').click(function(e) {
-            e.stopPropagation();
-            var carId = $(this).data('car-id');
-            var button = $(this);
-
-            $.ajax({
-                url: '/Cart/AddToCart',
-                type: 'POST',
-                data: { carId: carId, quantity: 1 },
-                beforeSend: function() {
-                    button.html('⏳');
-                    button.prop('disabled', true);
-                },
-                success: function(response) {
-                    if (response.success) {
-                        button.html('✓');
-                        setTimeout(function() {
-                            button.html('❤️');
-                            button.prop('disabled', false);
-                        }, 2000);
-                    } else {
-                        button.html('❤️');
-                        button.prop('disabled', false);
-                    }
-                },
-                error: function() {
-                    button.html('❤️');
-                    button.prop('disabled', false);
-                }
-            });
-        });
-    </script>
-}

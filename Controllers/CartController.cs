@@ -1,5 +1,4 @@
-﻿// Controllers/CartController.cs
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CarDelership.Data;
 using CarDelership.Models;
@@ -243,24 +242,41 @@ namespace CarDelership.Controllers
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            // Добавляем товары в заказ и очищаем корзину
+            // Добавляем товары в заказ, уменьшаем количество и обновляем статус
             foreach (var item in cartItems)
             {
                 var price = item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0;
-                _context.OrderItems.Add(new OrderItems
+                var orderItem = new OrderItems
                 {
                     Order_Id = order.Order_Id,
                     Car_Id = item.Car_Id,
                     Quantity = item.Quantity,
                     PriceAtPurchase = price
-                });
+                };
+                _context.OrderItems.Add(orderItem);
 
                 if (item.Car != null)
                 {
+                    // Уменьшаем количество товара
                     item.Car.Quantity -= item.Quantity;
+
+                    // Обновляем статус товара в зависимости от количества
+                    if (item.Car.Quantity <= 0)
+                    {
+                        item.Car.AvailabilityStatus = "Нет в наличии";
+                    }
+                    else if (item.Car.Quantity <= 3)
+                    {
+                        item.Car.AvailabilityStatus = "Под заказ";
+                    }
+                    else
+                    {
+                        item.Car.AvailabilityStatus = "В наличии";
+                    }
                 }
             }
 
+            // Очищаем корзину
             _context.ShoppingCarts.RemoveRange(cartItems);
             await _context.SaveChangesAsync();
 

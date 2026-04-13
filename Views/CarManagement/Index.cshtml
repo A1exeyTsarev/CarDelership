@@ -6,16 +6,29 @@
 <div class="container py-4">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white border-bottom">
-            <h5 class="mb-0 fw-bold">
-                <i class="bi bi-car-front me-2" style="color: #ffc107;"></i>
-                Управление товарами
-            </h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-car-front me-2" style="color: #ffc107;"></i>
+                    Управление товарами
+                </h5>
+                <a href="/CarManagement/Create" class="btn btn-yellow btn-sm">
+                    <i class="bi bi-plus-lg"></i> Добавить автомобиль
+                </a>
+            </div>
         </div>
         <div class="card-body">
             @if (TempData["Success"] != null)
             {
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
@@ -40,9 +53,11 @@
                                     <img src="@(car.CarImages?.FirstOrDefault()?.ImageName != null ? $"/images/{car.CarImages.First().ImageName}" : "/images/logo.jpg")"
                                          style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" />
                                 </td>
-                                <td>@car.Name</td>
-                                <td>@car.Price.ToString("N0") ₽</td>
-                                <td>@car.Quantity</td>
+                                <td class="fw-bold">@car.Name</td>
+                                <td class="car-price" style="font-size: 1rem;">@car.Price.ToString("N0") ₽</td>
+                                <td>
+                                    <span class="badge bg-secondary">@car.Quantity шт.</span>
+                                </td>
                                 <td>
                                     @{
                                         var statusClass = car.AvailabilityStatus switch
@@ -57,12 +72,16 @@
                                     <span class="badge @statusClass">@car.AvailabilityStatus</span>
                                 </td>
                                 <td>
-                                    <a href="/CarManagement/UpdateStatus/@car.Car_Id" class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil"></i> Изменить статус
-                                    </a>
-                                    <a href="/CarManagement/Edit/@car.Car_Id" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-edit"></i> Редактировать
-                                    </a>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/CarManagement/Edit/@car.Car_Id" class="btn btn-outline-primary" title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" title="Удалить"
+                                                data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                                data-car-id="@car.Car_Id" data-car-name="@car.Name">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -72,3 +91,36 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #000000 100%);">
+                <h5 class="modal-title text-white" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Подтверждение удаления
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить автомобиль <strong id="carName" style="color: #ffc107;"></strong>?</p>
+                <p class="text-danger mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Это действие нельзя отменить. Все изображения автомобиля также будут удалены.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form asp-action="DeleteConfirmed" asp-controller="CarManagement" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="carId" id="deleteCarId" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,110 @@
+﻿@model IEnumerable<CarDelership.Models.Feedback>
+@{
+    ViewData["Title"] = "Обратная связь";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-chat-dots me-2" style="color: #ffc107;"></i>
+                    Обратная связь
+                </h5>
+                <div class="btn-group">
+                    <a href="/Admin/Feedbacks?status=all" class="btn btn-sm @(ViewBag.CurrentStatus == "all" ? "btn-yellow" : "btn-outline-secondary")">Все</a>
+                    <a href="/Admin/Feedbacks?status=unprocessed" class="btn btn-sm @(ViewBag.CurrentStatus == "unprocessed" ? "btn-yellow" : "btn-outline-secondary")">Новые</a>
+                    <a href="/Admin/Feedbacks?status=processed" class="btn btn-sm @(ViewBag.CurrentStatus == "processed" ? "btn-yellow" : "btn-outline-secondary")">Обработанные</a>
+                    <a href="/Admin/Feedbacks?status=closed" class="btn btn-sm @(ViewBag.CurrentStatus == "closed" ? "btn-yellow" : "btn-outline-secondary")">Закрытые</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">Нет обращений</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Дата</th>
+                                <th>Пользователь</th>
+                                <th>Тема</th>
+                                <th>Сообщение</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Feedback_Id</td>
+                                    <td>@item.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.UserName))
+                                        {
+                                            <strong>@item.UserName</strong>
+                                            <br />
+                                            <small class="text-muted">@item.Email</small>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.Name</span>
+                                            <br />
+                                            <small class="text-muted">@item.Email</small>
+                                        }
+                                    </td>
+                                    <td>@item.Subject</td>
+                                    <td>
+                                        @(item.Message.Length > 50 ? item.Message.Substring(0, 50) + "..." : item.Message)
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = item.IsClosed || item.IsClosedByUser ? "secondary" :
+                                            (item.IsProcessed ? "success" : "warning");
+                                            var statusText = item.IsClosed || item.IsClosedByUser ? "Закрыто" :
+                                            (item.IsProcessed ? "Обработано" : "Новое");
+                                        }
+                                        <span class="badge bg-@statusClass">@statusText</span>
+                                    </td>
+                                    <td>
+                                        <a href="/Admin/FeedbackDetails/@item.Feedback_Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> Просмотр
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    // Автоматическое скрытие уведомлений через 5 секунд
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+</script>

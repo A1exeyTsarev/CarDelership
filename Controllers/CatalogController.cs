@@ -33,6 +33,9 @@ namespace CarDelership.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // ⚡ ПРОВЕРЯЕМ И ОБНОВЛЯЕМ СТАТУСЫ ТОВАРОВ (автоматически)
+            await UpdateCarStatusesByQuantity();
+
             // Базовый запрос
             var query = _context.Cars
                 .Include(c => c.CarImages)
@@ -40,7 +43,7 @@ namespace CarDelership.Controllers
                     .ThenInclude(m => m.Manufacturer)
                 .Include(c => c.CarTags)
                     .ThenInclude(ct => ct.Tag)
-                .Where(c => c.Quantity > 0);
+                .Where(c => c.Quantity > 0); // Показываем только товары в наличии
 
             // 🔍 ПОИСК
             if (!string.IsNullOrEmpty(searchTerm))
@@ -141,7 +144,7 @@ namespace CarDelership.Controllers
             return View(viewModel);
         }
 
-        // ✅ ДЕТАЛЬНАЯ СТРАНИЦА ТОВАРА
+        // ✅ ДЕТАЛЬНАЯ СТРАНИЦА ТОВАРА (ИСПРАВЛЕНА)
         public async Task<IActionResult> Details(int id)
         {
             if (!User.Identity.IsAuthenticated)
@@ -153,6 +156,13 @@ namespace CarDelership.Controllers
                 .Include(c => c.CarImages)
                 .Include(c => c.Model)
                     .ThenInclude(m => m.Manufacturer)
+                .Include(c => c.Model)
+                    .ThenInclude(m => m.BodyType)        // 👈 ДОБАВЛЕНО: Тип кузова
+                .Include(c => c.Model)
+                    .ThenInclude(m => m.EngineType)      // 👈 ДОБАВЛЕНО: Тип двигателя
+                .Include(c => c.Model)
+                    .ThenInclude(m => m.Transmission)    // 👈 ДОБАВЛЕНО: КПП
+                .Include(c => c.Color)
                 .Include(c => c.CarTags)
                     .ThenInclude(ct => ct.Tag)
                 .FirstOrDefaultAsync(c => c.Car_Id == id);
@@ -160,7 +170,54 @@ namespace CarDelership.Controllers
             if (car == null)
                 return NotFound();
 
+            // Проверяем и обновляем статус для конкретного товара
+            await UpdateSingleCarStatus(car);
+
             return View(car);
+        }
+
+        // 🔧 ВСПОМОГАТЕЛЬНЫЙ МЕТОД: Обновляет статусы всех товаров по количеству
+        private async Task UpdateCarStatusesByQuantity()
+        {
+            var cars = await _context.Cars.ToListAsync();
+            bool changes = false;
+
+            foreach (var car in cars)
+            {
+                string newStatus = GetStatusByQuantity(car.Quantity);
+                if (car.AvailabilityStatus != newStatus)
+                {
+                    car.AvailabilityStatus = newStatus;
+                    changes = true;
+                }
+            }
+
+            if (changes)
+            {
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // 🔧 ВСПОМОГАТЕЛЬНЫЙ МЕТОД: Обновляет статус одного товара
+        private async Task UpdateSingleCarStatus(Cars car)
+        {
+            string newStatus = GetStatusByQuantity(car.Quantity);
+            if (car.AvailabilityStatus != newStatus)
+            {
+                car.AvailabilityStatus = newStatus;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // 🔧 ОПРЕДЕЛЯЕТ СТАТУС ПО КОЛИЧЕСТВУ
+        private string GetStatusByQuantity(int quantity)
+        {
+            if (quantity <= 0)
+                return "Нет в наличии";
+            else if (quantity > 0 && quantity <= 3)
+                return "Под заказ"; // Мало осталось
+            else
+                return "В наличии";
         }
     }
 }

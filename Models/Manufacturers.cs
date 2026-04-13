@@ -24,6 +24,6 @@ namespace CarDelership.Models
         public Country? Country { get; set; }
 
         // Навигационное свойство
-        public ICollection<Model>? Models { get; set; }
+        public ICollection<CarModels>? Models { get; set; }
     }
 }

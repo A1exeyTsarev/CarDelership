@@ -80,30 +80,3 @@
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            $('.remove-from-wishlist').click(function() {
-                var carId = $(this).data('car-id');
-                var btn = $(this);
-                
-                $.post('/Wishlist/Remove', { carId: carId }, function(result) {
-                    if (result.success) {
-                        btn.closest('.col-md-6').fadeOut();
-                        location.reload();
-                    }
-                });
-            });
-            
-            $('.add-to-cart').click(function() {
-                var carId = $(this).data('car-id');
-                
-                $.post('/Cart/Add', { carId: carId, quantity: 1 }, function(result) {
-                    if (result.success) {
-                        alert('Товар добавлен в корзину');
-                    }
-                });
-            });
-        });
-    </script>
-}

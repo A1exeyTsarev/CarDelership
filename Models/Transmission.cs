@@ -13,6 +13,6 @@ namespace CarDelership.Models
         public string? Name { get; set; }
 
         // Навигационное свойство
-        public ICollection<Model>? Models { get; set; }
+        public ICollection<CarModels>? Models { get; set; }
     }
 }

@@ -50,7 +50,7 @@ namespace CarDelership.Models
 
         // Внешние ключи
         [ForeignKey("model_Id")]
-        public Model? Model { get; set; }
+        public CarModels? Model { get; set; }
 
         [ForeignKey("Color_Id")]  // ✅ Добавлена связь с Color
         public Color? Color { get; set; }

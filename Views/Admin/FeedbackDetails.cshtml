@@ -1,0 +1,147 @@
+﻿@model CarDelership.Models.Feedback
+@{
+    ViewData["Title"] = "Детали обращения";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-envelope me-2" style="color: #ffc107;"></i>
+                            Обращение #@Model.Feedback_Id
+                        </h5>
+                        <a href="/Admin/Feedbacks" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Назад к списку
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Информация об обращении -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <small class="text-muted">Дата создания</small>
+                            <p><strong>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Статус</small>
+                            <p>
+                                @{
+                                    var statusClass = Model.IsClosed || Model.IsClosedByUser ? "secondary" :
+                                                    (Model.IsProcessed ? "success" : "warning");
+                                    var statusText = Model.IsClosed || Model.IsClosedByUser ? "Закрыто" :
+                                                    (Model.IsProcessed ? "Обработано" : "Новое");
+                                }
+                                <span class="badge bg-@statusClass">@statusText</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Информация о пользователе -->
+                    <div class="mb-4">
+                        <h6>Информация о пользователе</h6>
+                        <div class="bg-light p-3 rounded">
+                            <p><strong>Имя:</strong> @Model.Name</p>
+                            <p><strong>Email:</strong> @Model.Email</p>
+                            @if (!string.IsNullOrEmpty(Model.UserName))
+                            {
+                                <p><strong>Логин:</strong> @Model.UserName</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Тема -->
+                    <div class="mb-4">
+                        <h6>Тема обращения</h6>
+                        <div class="bg-light p-3 rounded">
+                            @Model.Subject
+                        </div>
+                    </div>
+
+                    <!-- Сообщение -->
+                    <div class="mb-4">
+                        <h6>Сообщение</h6>
+                        <div class="bg-light p-3 rounded">
+                            @Html.Raw(Model.Message.Replace("\n", "<br />"))
+                        </div>
+                    </div>
+
+                    <!-- Ответ администратора -->
+                    @if (!string.IsNullOrEmpty(Model.AdminComment))
+                    {
+                        <div class="mb-4">
+                            <h6 class="text-success">Ответ администратора</h6>
+                            <div class="bg-success bg-opacity-10 p-3 rounded border-start border-success border-4">
+                                @Html.Raw(Model.AdminComment.Replace("\n", "<br />"))
+                                @if (Model.ProcessedAt.HasValue)
+                                {
+                                    <hr />
+                                    <small class="text-muted">
+                                        @Model.ProcessedAt?.ToString("dd.MM.yyyy HH:mm") - @Model.ProcessedBy
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Форма ответа -->
+                    @if (!Model.IsClosed && !Model.IsClosedByUser)
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            @if (Model.IsProcessed)
+                            {
+                                <span>Ответ уже отправлен. Вы можете отредактировать его или закрыть обращение.</span>
+                            }
+                            else
+                            {
+                                <span>Напишите ответ пользователю и отметьте обращение как обработанное.</span>
+                            }
+                        </div>
+
+                        <form method="post" action="/Admin/ProcessFeedback">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Feedback_Id" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Ответ пользователю</label>
+                                <textarea name="adminComment" class="form-control" rows="6" 
+                                          placeholder="Напишите ответ пользователю...">@Model.AdminComment</textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-yellow">
+                                    <i class="bi bi-send"></i> 
+                                    @(Model.IsProcessed ? "Обновить ответ" : "Отправить ответ")
+                                </button>
+                                
+                                @if (!Model.IsClosed)
+                                {
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="closeFeedback(@Model.Feedback_Id)">
+                                        <i class="bi bi-x-circle"></i> Закрыть обращение
+                                    </button>
+                                }
+                            </div>
+                        </form>
+
+                        <form method="post" action="/Admin/CloseFeedback" id="closeForm" style="display:none;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.Feedback_Id" />
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary">
+                            <i class="bi bi-check-circle"></i>
+                            Это обращение закрыто. Пользователь не сможет ответить на него.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

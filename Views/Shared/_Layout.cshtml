@@ -44,7 +44,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Catalog" asp-action="Index">Каталог</a>
                         </li>
                         
-                        <!-- Пункты для менеджера/администратора (РУССКИЕ НАЗВАНИЯ) -->
+                        <!-- Пункты для менеджера/администратора -->
                         @if (User.Identity.IsAuthenticated && (Context.Session.GetString("UserRole") == "Менеджер" || Context.Session.GetString("UserRole") == "Администратор"))
                         {
                             <li class="nav-item dropdown">
@@ -66,6 +66,43 @@
                                     <li>
                                         <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
                                             <i class="bi bi-person"></i> Мой профиль
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
+                        <!-- Пункты для администратора (дополнительно) -->
+                        @if (User.Identity.IsAuthenticated && Context.Session.GetString("UserRole") == "Администратор")
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-shield-lock-fill" style="color: #dc3545;"></i> Админ
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                            <i class="bi bi-speedometer2"></i> Панель управления
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="News">
+                                            <i class="bi bi-newspaper"></i> Новости и акции
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                            <i class="bi bi-people"></i> Пользователи
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Feedbacks">
+                                            <i class="bi bi-chat-dots"></i> Обратная связь
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Comments">
+                                            <i class="bi bi-star"></i> Отзывы
                                         </a>
                                     </li>
                                 </ul>
@@ -119,7 +156,22 @@
                                             <i class="bi bi-cart"></i> Корзина
                                         </a>
                                     </li>
+                                    
+                                    <!-- Разделитель -->
                                     <li><hr class="dropdown-divider"></li>
+                                    
+                                    <!-- Пункт ПОДДЕРЖКА -->
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Support" asp-action="Index">
+                                            <i class="bi bi-headset me-2" style="color: #ffc107;"></i> 
+                                            Поддержка
+                                            <span class="badge bg-warning text-dark ms-2" id="unreadSupportBadge" style="display: none;">Новое</span>
+                                        </a>
+                                    </li>
+                                    
+                                    <!-- Разделитель -->
+                                    <li><hr class="dropdown-divider"></li>
+                                    
                                     <li>
                                         <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
                                             <i class="bi bi-box-arrow-right"></i> Выйти
@@ -171,6 +223,30 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Функция для проверки наличия непрочитанных обращений в поддержку
+        function checkUnreadSupport() {
+            $.get('/Support/HasUnread', function(data) {
+                if (data.hasUnread) {
+                    $('#unreadSupportBadge').show();
+                } else {
+                    $('#unreadSupportBadge').hide();
+                }
+            });
+        }
+        
+        // Проверяем каждые 30 секунд
+        @if (User.Identity.IsAuthenticated)
+        {
+            <text>
+            $(document).ready(function() {
+                checkUnreadSupport();
+                setInterval(checkUnreadSupport, 30000);
+            });
+            </text>
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
