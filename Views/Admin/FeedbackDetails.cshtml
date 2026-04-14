@@ -144,4 +144,22 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        function closeFeedback(id) {
+            if (confirm('Закрыть обращение? Пользователь не сможет добавить новые сообщения.')) {
+                document.getElementById('closeForm').submit();
+            }
+        }
+        
+        // Автоматическое скрытие уведомлений через 5 секунд
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}
 

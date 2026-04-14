@@ -1,0 +1,186 @@
+﻿@model IEnumerable<CarDelership.Models.CarComments>
+@{
+    ViewData["Title"] = "Модерация комментариев";
+}
+@Html.AntiForgeryToken()
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-star me-2" style="color: #ffc107;"></i>
+                    Модерация комментариев
+                </h5>
+                <div class="btn-group">
+                    <a href="/AdminComments/Index?status=pending" class="btn btn-sm @(ViewBag.CurrentStatus == "pending" ? "btn-yellow" : "btn-outline-secondary")">
+                        На модерации <span class="badge bg-danger ms-1">@Model.Count(c => !c.IsApproved)</span>
+                    </a>
+                    <a href="/AdminComments/Index?status=approved" class="btn btn-sm @(ViewBag.CurrentStatus == "approved" ? "btn-yellow" : "btn-outline-secondary")">
+                        Одобренные
+                    </a>
+                    <a href="/AdminComments/Index?status=all" class="btn btn-sm @(ViewBag.CurrentStatus == "all" ? "btn-yellow" : "btn-outline-secondary")">
+                        Все
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">Нет комментариев</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Дата</th>
+                                <th>Автор</th>
+                                <th>Автомобиль</th>
+                                <th>Комментарий</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var comment in Model)
+                            {
+                                <tr>
+                                    <td>@comment.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>
+                                        @if (comment.Author != null)
+                                        {
+                                            <strong>@(comment.Author.FullName ?? comment.Author.Login)</strong>
+                                            <br />
+                                            <small class="text-muted">@comment.Author.Email</small>
+                                        }
+                                        else
+                                        {
+                                            <span>Пользователь удален</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (comment.Car != null)
+                                        {
+                                            <a href="/Catalog/Details/@comment.Car_Id" target="_blank">
+                                                @comment.Car.Name
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span>Автомобиль удален</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="comment-preview" style="max-width: 300px;">
+                                            @(comment.CommentText.Length > 100 ? comment.CommentText.Substring(0, 100) + "..." : comment.CommentText)
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (comment.IsApproved)
+                                        {
+                                            <span class="badge bg-success">Одобрен</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">На модерации</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            @if (!comment.IsApproved)
+                                            {
+                                                <button type="button" class="btn btn-success" onclick="approveComment(@comment.CarComment_Id)">
+                                                    <i class="bi bi-check-lg"></i> Одобрить
+                                                </button>
+                                                <button type="button" class="btn btn-danger" onclick="rejectComment(@comment.CarComment_Id)">
+                                                    <i class="bi bi-x-lg"></i> Отклонить
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-danger" onclick="deleteComment(@comment.CarComment_Id)">
+                                                    <i class="bi bi-trash"></i> Удалить
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function approveComment(id) {
+            if (confirm('Одобрить этот комментарий?')) {
+                $.ajax({
+                    url: '/AdminComments/Approve/' + id,
+                    type: 'POST',
+                    data: {
+                        '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Ошибка: ' + error);
+                    }
+                });
+            }
+        }
+
+        function rejectComment(id) {
+            if (confirm('Отклонить этот комментарий? Он будет удален.')) {
+                $.ajax({
+                    url: '/AdminComments/Reject/' + id,
+                    type: 'POST',
+                    data: {
+                        '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Ошибка: ' + error);
+                    }
+                });
+            }
+        }
+
+        function deleteComment(id) {
+            if (confirm('Удалить этот комментарий?')) {
+                $.ajax({
+                    url: '/AdminComments/Delete/' + id,
+                    type: 'POST',
+                    data: {
+                        '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Ошибка: ' + error);
+                    }
+                });
+            }
+        }
+    </script>
+}

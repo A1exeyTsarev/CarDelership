@@ -101,7 +101,7 @@
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Comments">
+                                        <a class="dropdown-item" asp-controller="AdminComments" asp-action="Index">
                                             <i class="bi bi-star"></i> Отзывы
                                         </a>
                                     </li>
@@ -161,13 +161,20 @@
                                     <li><hr class="dropdown-divider"></li>
                                     
                                     <!-- Пункт ПОДДЕРЖКА -->
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Support" asp-action="Index">
-                                            <i class="bi bi-headset me-2" style="color: #ffc107;"></i> 
-                                            Поддержка
-                                            <span class="badge bg-warning text-dark ms-2" id="unreadSupportBadge" style="display: none;">Новое</span>
-                                        </a>
-                                    </li>
+                                    <!-- Пункт ПОДДЕРЖКА - показываем только НЕ администраторам -->
+                                    @if (Context.Session.GetString("UserRole") != "Администратор")
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Support" asp-action="Index">
+                                                <i class="bi bi-headset me-2" style="color: #ffc107;"></i> 
+                                                Поддержка
+                                                <span class="badge bg-warning text-dark ms-2" id="unreadSupportBadge" style="display: none;">Новое</span>
+                                            </a>
+                                        </li>
+            
+                                        <!-- Разделитель -->
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
                                     
                                     <!-- Разделитель -->
                                     <li><hr class="dropdown-divider"></li>

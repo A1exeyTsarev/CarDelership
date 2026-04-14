@@ -5,7 +5,7 @@
 namespace CarDelership.Migrations
 {
     /// <inheritdoc />
-    public partial class CarDealership22 : Migration
+    public partial class CarDelership22 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

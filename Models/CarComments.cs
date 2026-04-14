@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarDelership.Models
 {
-    // CarComment (Комментарии к авто)
     public class CarComments
     {
         [Key]
@@ -17,15 +16,23 @@ namespace CarDelership.Models
 
         [Required]
         [StringLength(2000)]
-        public string? CommentText { get; set; }
+        public string CommentText { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
-        // Внешние ключи
+        // Новое поле для модерации
+        public bool IsApproved { get; set; } = false; // false - ожидает проверки, true - одобрен
+
+        public DateTime? ApprovedAt { get; set; }
+
+        [StringLength(100)]
+        public string? ApprovedBy { get; set; }
+
+        // Навигационные свойства
         [ForeignKey("Car_Id")]
-        public Cars? Car { get; set; }
+        public virtual Cars? Car { get; set; }
 
         [ForeignKey("Author_Id")]
-        public Users? Author { get; set; }
+        public virtual Users? Author { get; set; }
     }
 }

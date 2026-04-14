@@ -13,20 +13,12 @@ namespace CarDelership.Models
         [StringLength(100)]
         public string? UserName { get; set; }
 
-        [Required(ErrorMessage = "Введите ваше имя")]
-        [StringLength(100, ErrorMessage = "Имя не может быть длиннее 100 символов")]
         public string? Name { get; set; }
 
-        [Required(ErrorMessage = "Введите email")]
-        [EmailAddress(ErrorMessage = "Введите корректный email")]
-        [StringLength(100)]
         public string? Email { get; set; }
 
-        [Required(ErrorMessage = "Выберите тему обращения")]
-        [StringLength(200)]
         public string? Subject { get; set; }
 
-        [Required(ErrorMessage = "Введите сообщение")]
         public string? Message { get; set; }
 
         public DateTime CreatedAt { get; set; }

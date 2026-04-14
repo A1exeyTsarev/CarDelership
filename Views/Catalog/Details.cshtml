@@ -185,3 +185,191 @@ else
         </div>
     </div>
 }
+
+@section Scripts {
+    <script>
+        // Загрузка комментариев
+        function loadComments() {
+            var carId = @Model.Car_Id;
+            $.get('/Comment/GetComments', { carId: carId }, function(data) {
+                var commentsList = $('#commentsList');
+                commentsList.empty();
+
+                if (data.length === 0) {
+                    commentsList.html('<div class="text-center text-muted py-3"><i class="bi bi-chat-dots"></i> Пока нет отзывов. Будьте первым!</div>');
+                    $('#commentsCount').text(0);
+                    return;
+                }
+
+                $('#commentsCount').text(data.length);
+
+                $.each(data, function(i, comment) {
+                    var statusBadge = '';
+                    if (comment.isPending) {
+                        statusBadge = '<span class="badge bg-warning text-dark ms-2">На модерации</span>';
+                    }
+
+                    var deleteButton = '';
+                    if (comment.isOwner) {
+                        deleteButton = `<button class="btn btn-sm btn-outline-danger delete-comment" data-id="${comment.id}"><i class="bi bi-trash"></i></button>`;
+                    }
+
+                    var commentHtml = `
+                        <div class="comment-item border-bottom pb-3 mb-3" id="comment-${comment.id}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong class="text-warning">${escapeHtml(comment.authorName)}</strong>
+                                    <small class="text-muted ms-2">${comment.createdAt}</small>
+                                    ${statusBadge}
+                                </div>
+                                ${deleteButton}
+                            </div>
+                            <p class="mb-0 mt-2">${escapeHtml(comment.commentText)}</p>
+                        </div>
+                    `;
+                    commentsList.append(commentHtml);
+                });
+            }).fail(function() {
+                $('#commentsList').html('<div class="text-center text-danger py-3"><i class="bi bi-exclamation-triangle"></i> Ошибка загрузки отзывов</div>');
+            });
+        }
+
+        // Отправка комментария
+        $('#submitCommentBtn').click(function() {
+            var carId = $(this).data('car-id');
+            var commentText = $('#commentText').val().trim();
+
+            if (!commentText) {
+                alert('Введите текст отзыва');
+                return;
+            }
+
+            if (commentText.length > 2000) {
+                alert('Комментарий не должен превышать 2000 символов');
+                return;
+            }
+
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '/Comment/Add',
+                type: 'POST',
+                data: {
+                    carId: carId,
+                    commentText: commentText,
+                    __RequestVerificationToken: token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#commentText').val('');
+                        loadComments();
+                        alert(response.message);
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    var message = xhr.responseJSON?.message || 'Ошибка при отправке отзыва';
+                    alert(message);
+                }
+            });
+        });
+
+        // Удаление комментария
+        $(document).on('click', '.delete-comment', function() {
+            var commentId = $(this).data('id');
+            if (confirm('Удалить этот комментарий?')) {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/Comment/Delete',
+                    type: 'POST',
+                    data: {
+                        commentId: commentId,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            loadComments();
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Ошибка при удалении комментария');
+                    }
+                });
+            }
+        });
+
+        // Функция для экранирования HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Добавление в корзину
+        $('.add-to-cart-btn').click(function() {
+            var carId = $(this).data('car-id');
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '/Cart/Add',
+                type: 'POST',
+                data: {
+                    carId: carId,
+                    quantity: 1,
+                    __RequestVerificationToken: token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Товар добавлен в корзину');
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при добавлении в корзину');
+                }
+            });
+        });
+
+        // Добавление в избранное
+        $('.add-to-wishlist-btn').click(function() {
+            var carId = $(this).data('car-id');
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '/Wishlist/Add',
+                type: 'POST',
+                data: {
+                    carId: carId,
+                    __RequestVerificationToken: token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('Товар добавлен в избранное');
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function() {
+                    alert('Ошибка при добавлении в избранное');
+                }
+            });
+        });
+
+        // Загружаем комментарии при загрузке страницы
+        $(document).ready(function() {
+            loadComments();
+        });
+    </script>
+}

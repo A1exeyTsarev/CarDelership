@@ -24,15 +24,30 @@ namespace CarDelership.Controllers
             return HttpContext.Session.GetInt32("UserId");
         }
 
+        private bool IsAdmin()
+        {
+            var userRole = HttpContext.Session.GetString("UserRole");
+            return userRole == "Администратор";
+        }
+
         // GET: /Comment/GetComments?carId=1
         [HttpGet]
         public async Task<IActionResult> GetComments(int carId)
         {
             try
             {
-                var comments = await _context.CarComments
+                // Показываем только одобренные комментарии для обычных пользователей
+                var query = _context.CarComments
                     .Include(c => c.Author)
-                    .Where(c => c.Car_Id == carId)
+                    .Where(c => c.Car_Id == carId);
+
+                // Администратор видит все комментарии (включая неодобренные)
+                if (!IsAdmin())
+                {
+                    query = query.Where(c => c.IsApproved == true);
+                }
+
+                var comments = await query
                     .OrderByDescending(c => c.CreatedAt)
                     .Select(c => new
                     {
@@ -44,7 +59,9 @@ namespace CarDelership.Controllers
                                 : "Пользователь"),
                         commentText = c.CommentText,
                         createdAt = c.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
-                        isOwner = c.Author_Id == GetCurrentUserId()
+                        isOwner = c.Author_Id == GetCurrentUserId(),
+                        isApproved = c.IsApproved,
+                        isPending = !c.IsApproved
                     })
                     .ToListAsync();
 
@@ -91,11 +108,18 @@ namespace CarDelership.Controllers
                     Car_Id = carId,
                     Author_Id = userId.Value,
                     CommentText = commentText.Trim(),
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    IsApproved = false // По умолчанию не одобрен, ждет модерации
                 };
 
                 _context.CarComments.Add(comment);
                 await _context.SaveChangesAsync();
+
+                // Для администраторов комментарий сразу виден, для остальных - после одобрения
+                var isAdmin = IsAdmin();
+                var message = isAdmin
+                    ? "Комментарий добавлен и сразу опубликован"
+                    : "Комментарий отправлен на модерацию. После проверки он появится на сайте.";
 
                 var user = await _context.Users.FindAsync(userId);
                 var authorName = user != null && !string.IsNullOrEmpty(user.FullName)
@@ -107,14 +131,16 @@ namespace CarDelership.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = "Комментарий добавлен",
+                    message = message,
                     comment = new
                     {
                         id = comment.CarComment_Id,
                         authorName = authorName,
                         commentText = comment.CommentText,
                         createdAt = comment.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
-                        isOwner = true
+                        isOwner = true,
+                        isApproved = comment.IsApproved,
+                        isPending = !comment.IsApproved
                     }
                 });
             }
@@ -146,7 +172,8 @@ namespace CarDelership.Controllers
                     return Json(new { success = false, message = "Комментарий не найден" });
                 }
 
-                if (comment.Author_Id != userId)
+                // Администратор может удалить любой комментарий, пользователь - только свой
+                if (comment.Author_Id != userId && !IsAdmin())
                 {
                     return Json(new { success = false, message = "Вы можете удалять только свои комментарии" });
                 }
