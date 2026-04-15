@@ -1,0 +1,91 @@
+﻿<!-- Views/News/Index.cshtml -->
+@{
+    ViewData["Title"] = "Новости и акции";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">
+            <i class="bi bi-newspaper text-warning"></i> Новости и акции
+        </h1>
+        <p class="text-muted">Будьте в курсе последних новостей и специальных предложений</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="badge bg-warning text-dark mb-2">🔥 Акция</span>
+                        <small class="text-muted">до 30 апреля</small>
+                    </div>
+                    <h5 class="card-title fw-bold">Скидка 20% на все LADA</h5>
+                    <p class="card-text text-muted">
+                        При покупке любого автомобиля LADA вы получаете скидку 20%
+                        и бесплатное оформление ОСАГО в подарок!
+                    </p>
+                    <a href="/Catalog" class="btn btn-yellow btn-sm">
+                        Выбрать автомобиль →
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="badge bg-success text-dark mb-2">📢 Новость</span>
+                        <small class="text-muted">15 апреля</small>
+                    </div>
+                    <h5 class="card-title fw-bold">Открытие нового автосалона</h5>
+                    <p class="card-text text-muted">
+                        Мы рады сообщить об открытии нового автосалона в центре города.
+                        Приглашаем всех желающих на тест-драйв!
+                    </p>
+                    <a href="#" class="btn btn-outline-yellow btn-sm">
+                        Подробнее →
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="badge bg-info text-dark mb-2">💰 Спецпредложение</span>
+                        <small class="text-muted">до 31 мая</small>
+                    </div>
+                    <h5 class="card-title fw-bold">Кредит 0% на 12 месяцев</h5>
+                    <p class="card-text text-muted">
+                        Оформите кредит на любой автомобиль без переплаты.
+                        Первоначальный взнос от 0%!
+                    </p>
+                    <a href="/Catalog" class="btn btn-outline-yellow btn-sm">
+                        Узнать условия →
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="badge bg-danger text-white mb-2">⭐ Трейд-ин</span>
+                        <small class="text-muted">постоянно</small>
+                    </div>
+                    <h5 class="card-title fw-bold">Обменяйте свой автомобиль</h5>
+                    <p class="card-text text-muted">
+                        Программа трейд-ин: сдайте старый автомобиль и получите
+                        дополнительную скидку на новый!
+                    </p>
+                    <a href="/Catalog" class="btn btn-outline-yellow btn-sm">
+                        Рассчитать →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

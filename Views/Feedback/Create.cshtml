@@ -1,0 +1,109 @@
+﻿@model CarDelership.Models.Feedback
+@{
+    ViewData["Title"] = "Новое обращение";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h4 class="mb-0">
+                        <i class="bi bi-chat-dots me-2" style="color: #ffc107;"></i>
+                        Новое обращение в поддержку
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form method="post" asp-action="Create" asp-controller="Feedback">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Тема обращения *</label>
+                            <select asp-for="Subject" class="form-select" required>
+                                <option value="">Выберите тему</option>
+                                <option value="Вопрос о товаре">Вопрос о товаре</option>
+                                <option value="Проблема с заказом">Проблема с заказом</option>
+                                <option value="Доставка и оплата">Доставка и оплата</option>
+                                <option value="Предложение">Предложение по улучшению</option>
+                                <option value="Жалоба">Жалоба</option>
+                                <option value="Другое">Другое</option>
+                            </select>
+                            <span asp-validation-for="Subject" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ваше имя *</label>
+                            <input asp-for="Name" class="form-control" required maxlength="100" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                            <small class="text-muted">макс. 100 символов</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email *</label>
+                            <input asp-for="Email" type="email" class="form-control" required maxlength="100" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <small class="text-muted">макс. 100 символов</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Сообщение *</label>
+                            <textarea asp-for="Message" class="form-control" rows="6" required
+                                      maxlength="5000"
+                                      placeholder="Опишите подробно вашу проблему или вопрос..."></textarea>
+                            <span asp-validation-for="Message" class="text-danger"></span>
+                            <small class="text-muted">макс. 5000 символов</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            Мы стараемся отвечать на все обращения в течение 24 часов.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-yellow">
+                                <i class="bi bi-send"></i> Отправить
+                            </button>
+                            <a href="/Feedback/Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    
+    <script>
+        // Простой счетчик символов для сообщения
+        var textarea = document.querySelector('textarea');
+        var counter = document.createElement('small');
+        counter.className = 'text-muted mt-1 d-block';
+        textarea.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            var len = textarea.value.length;
+            counter.innerHTML = len + ' / 5000 символов';
+            if (len >= 5000) {
+                counter.style.color = 'red';
+            } else {
+                counter.style.color = '#6c757d';
+            }
+        }
+        
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+    </script>
+}

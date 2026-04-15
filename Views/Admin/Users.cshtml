@@ -1,0 +1,295 @@
+﻿<!-- Views/Admin/Users.cshtml -->
+@model IEnumerable<CarDelership.Models.Users>
+@{
+    ViewData["Title"] = "Управление пользователями";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-people text-warning"></i> Управление пользователями
+            </h5>
+            <span class="badge bg-warning text-dark">Всего: @Model.Count()</span>
+        </div>
+        <div class="card-body">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-person-x" style="font-size: 64px; color: #ddd;"></i>
+                    <h4 class="text-muted mt-3">Нет зарегистрированных пользователей</h4>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>ФИО</th>
+                                <th>Логин</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Дата регистрации</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr id="user-row-@user.User_Id">
+                                    <td>@user.User_Id</td>
+                                    <td>@user.FullName</td>
+                                    <td>@user.Login</td>
+                                    <td>@(user.Email ?? "—")</td>
+                                    <td>@(user.Phone ?? "—")</td>
+                                    <td>
+                                        @if (user.Role_Id == 1)
+                                        {
+                                            <span class="badge bg-danger">Администратор</span>
+                                        }
+                                        else if (user.Role_Id == 2)
+                                        {
+                                            <span class="badge bg-warning text-dark">Менеджер</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info">Клиент</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.IsActive)
+                                        {
+                                            <span class="badge bg-success status-badge">Активен</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger status-badge">Заблокирован</span>
+                                        }
+                                    </td>
+                                    <td>@user.RegistrationDate.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- Кнопка блокировки/разблокировки -->
+                                            @if (user.Role_Id != 1 && user.User_Id != Context.Session.GetInt32("UserId"))
+                                            {
+                                                <button class="btn btn-outline-warning toggle-status"
+                                                        data-user-id="@user.User_Id"
+                                                        data-active="@user.IsActive.ToString().ToLower()"
+                                                        title="@(user.IsActive ? "Заблокировать" : "Разблокировать")">
+                                                    <i class="bi bi-@(user.IsActive ? "lock" : "unlock")"></i>
+                                                </button>
+                                            }
+                                            else if (user.Role_Id == 1)
+                                            {
+                                                <button class="btn btn-outline-secondary" disabled title="Нельзя изменять администратора">
+                                                    <i class="bi bi-shield-lock"></i>
+                                                </button>
+                                            }
+                                            
+                                            <!-- Выбор роли - исправленная версия -->
+                                            @if (user.Role_Id != 1 && user.User_Id != Context.Session.GetInt32("UserId"))
+                                            {
+                                                <select class="form-select form-select-sm change-role" style="width: 110px;" data-user-id="@user.User_Id">
+                                                    @if (user.Role_Id == 2)
+                                                    {
+                                                        <option value="2" selected>Менеджер</option>
+                                                        <option value="3">Клиент</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="2">Менеджер</option>
+                                                        <option value="3" selected>Клиент</option>
+                                                    }
+                                                </select>
+                                            }
+                                            
+                                            <!-- Кнопка удаления -->
+                                            @if (user.Role_Id != 1 && user.User_Id != Context.Session.GetInt32("UserId"))
+                                            {
+                                                <button class="btn btn-outline-danger delete-user"
+                                                        data-user-id="@user.User_Id"
+                                                        data-user-name="@user.FullName"
+                                                        title="Удалить">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<form id="antiForgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Получаем токен антифоргери
+            var token = $('#antiForgeryForm input[name="__RequestVerificationToken"]').val();
+            
+            // Переключение статуса (блокировка/разблокировка)
+            $('.toggle-status').click(function() {
+                var button = $(this);
+                var userId = button.data('user-id');
+                var isActive = button.data('active');
+                
+                var action = isActive ? 'заблокировать' : 'разблокировать';
+                if (!confirm(`Вы уверены, что хотите ${action} этого пользователя?`)) {
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/Admin/ToggleUserStatus',
+                    type: 'POST',
+                    data: { userId: userId },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(response) {
+                        if (response.success) {
+                            var row = $('#user-row-' + userId);
+                            var statusBadge = row.find('.status-badge');
+                            var toggleButton = row.find('.toggle-status');
+                            
+                            if (response.isActive) {
+                                statusBadge.removeClass('bg-danger').addClass('bg-success').text('Активен');
+                                toggleButton.html('<i class="bi bi-lock"></i>');
+                                toggleButton.data('active', false);
+                                toggleButton.attr('title', 'Заблокировать');
+                            } else {
+                                statusBadge.removeClass('bg-success').addClass('bg-danger').text('Заблокирован');
+                                toggleButton.html('<i class="bi bi-unlock"></i>');
+                                toggleButton.data('active', true);
+                                toggleButton.attr('title', 'Разблокировать');
+                            }
+                            
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showToast('Ошибка при изменении статуса', 'error');
+                    }
+                });
+            });
+            
+            // Изменение роли
+            $('.change-role').change(function() {
+                var select = $(this);
+                var userId = select.data('user-id');
+                var roleId = select.val();
+                var roleName = select.find('option:selected').text();
+                
+                if (!confirm(`Вы уверены, что хотите изменить роль на "${roleName}"?`)) {
+                    select.val(select.data('original-value'));
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/Admin/ChangeUserRole',
+                    type: 'POST',
+                    data: { userId: userId, roleId: roleId },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(response) {
+                        if (response.success) {
+                            var row = $('#user-row-' + userId);
+                            var roleBadge = row.find('td:eq(5) span');
+                            
+                            if (roleId == '2') {
+                                roleBadge.removeClass('bg-info').addClass('bg-warning text-dark').text('Менеджер');
+                            } else {
+                                roleBadge.removeClass('bg-warning text-dark').addClass('bg-info').text('Клиент');
+                            }
+                            
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.message, 'error');
+                            select.val(select.data('original-value'));
+                        }
+                    },
+                    error: function() {
+                        showToast('Ошибка при изменении роли', 'error');
+                        select.val(select.data('original-value'));
+                    }
+                });
+            });
+            
+            // Сохраняем оригинальное значение при загрузке
+            $('.change-role').each(function() {
+                $(this).data('original-value', $(this).val());
+            });
+            
+            // Удаление пользователя
+            $('.delete-user').click(function() {
+                var button = $(this);
+                var userId = button.data('user-id');
+                var userName = button.data('user-name');
+                
+                if (!confirm(`Вы уверены, что хотите удалить пользователя "${userName}"? Это действие нельзя отменить!`)) {
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/Admin/DeleteUser',
+                    type: 'POST',
+                    data: { userId: userId },
+                    headers: { 'RequestVerificationToken': token },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#user-row-' + userId).fadeOut(function() {
+                                $(this).remove();
+                                var rowCount = $('tbody tr').length;
+                                $('.card-header .badge').text('Всего: ' + rowCount);
+                                if (rowCount === 0) {
+                                    location.reload();
+                                }
+                            });
+                            showToast(response.message, 'success');
+                        } else {
+                            showToast(response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        showToast('Ошибка при удалении пользователя', 'error');
+                    }
+                });
+            });
+            
+            // Функция для показа уведомлений
+            function showToast(message, type) {
+                var bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+                var icon = type === 'success' ? 'check-circle' : 'exclamation-triangle';
+                
+                var toast = $(`
+                    <div class="toast align-items-center text-white ${bgClass} border-0 position-fixed bottom-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-${icon} me-2"></i> ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `);
+                
+                $('body').append(toast);
+                var bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+                bsToast.show();
+                
+                toast.on('hidden.bs.toast', function() {
+                    toast.remove();
+                });
+            }
+        });
+    </script>
+}

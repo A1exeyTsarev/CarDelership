@@ -17,10 +17,14 @@
                     <form method="get" asp-action="Index" id="filterForm">
                         <!-- Поиск -->
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Поиск</label>
-                            <input type="text" name="searchTerm" class="form-control" 
-                                   placeholder="Название или производитель..." value="@Model.SearchTerm"
-                                   onchange="this.form.submit()">
+                        <label class="form-label fw-bold">Поиск</label>
+                        <input type="text" name="searchTerm" class="form-control" 
+                               placeholder="Название или производитель..." 
+                               value="@Model.SearchTerm"
+                               maxlength="50"
+                               oninput="if(this.value.length > 50) this.value = this.value.substring(0,50)"
+                               onchange="this.form.submit()">
+                            <small class="text-muted">Максимум 50 символов</small>
                         </div>
 
                         <!-- Сортировка -->
@@ -36,19 +40,24 @@
                             </select>
                         </div>
 
-                        <!-- Цена -->
+                        <!-- Цена с ограничениями (простая версия) -->
                         <div class="mb-3">
                             <label class="form-label fw-bold">Цена (₽)</label>
                             <div class="row">
                                 <div class="col-6">
                                     <input type="number" name="minPrice" class="form-control" 
-                                           placeholder="От" value="@Model.MinPrice" onchange="this.form.submit()">
+                                           placeholder="От" value="@Model.MinPrice" 
+                                           min="0" max="10000000" step="10000"
+                                           onchange="this.form.submit()">
                                 </div>
                                 <div class="col-6">
                                     <input type="number" name="maxPrice" class="form-control" 
-                                           placeholder="До" value="@Model.MaxPrice" onchange="this.form.submit()">
+                                           placeholder="До" value="@Model.MaxPrice" 
+                                           min="0" max="10000000" step="10000"
+                                           onchange="this.form.submit()">
                                 </div>
                             </div>
+                            <small class="text-muted">от 0 до 10 000 000 ₽</small>
                         </div>
 
                         <!-- Производитель -->

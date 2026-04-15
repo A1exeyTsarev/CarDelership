@@ -10,97 +10,192 @@
             <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
                 <div class="card-header bg-dark text-white text-center py-4">
                     <img src="~/images/logo.jpg" alt="Logo" height="50" class="mb-2">
-                    <h3 class="mb-0">Регистрация</h3>
-                    <p class="text-muted mb-0">Создайте новый аккаунт</p>
-                </div>
-                <div class="card-body p-4">
-                    <form asp-action="Register" method="post">
-                        @Html.AntiForgeryToken()
+                        <h3 class="mb-0 text-white">Регистрация</h3>
+                        <p class="text-white-50 mb-0">Создайте новый аккаунт</p>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="Register" method="post">
+                            @Html.AntiForgeryToken()
 
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label asp-for="Login" class="form-label fw-bold">
-                                    <i class="bi bi-person"></i> Логин <span class="text-danger">*</span>
-                                </label>
-                                <input asp-for="Login" class="form-control" placeholder="Введите логин" />
-                                <span asp-validation-for="Login" class="text-danger"></span>
-                                <small class="text-muted">Минимум 3 символа</small>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label asp-for="FullName" class="form-label fw-bold">
-                                    <i class="bi bi-card-text"></i> ФИО <span class="text-danger">*</span>
-                                </label>
-                                <input asp-for="FullName" class="form-control" placeholder="Иванов Иван Иванович" />
-                                <span asp-validation-for="FullName" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Password" class="form-label fw-bold">
-                                    <i class="bi bi-lock"></i> Пароль <span class="text-danger">*</span>
-                                </label>
-                                <input asp-for="Password" class="form-control" type="password" placeholder="Введите пароль" />
-                                <span asp-validation-for="Password" class="text-danger"></span>
-                                <small class="text-muted">Минимум 6 символов</small>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="Login" class="form-label fw-bold">
+                                        <i class="bi bi-person"></i> Логин <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Login" class="form-control"
+                                           placeholder="Введите логин"
+                                           maxlength="50"
+                                           minlength="3" />
+                                    <span asp-validation-for="Login" class="text-danger"></span>
+                                    <small class="text-muted">от 3 до 50 символов (буквы, цифры, _)</small>
+                                </div>
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ConfirmPassword" class="form-label fw-bold">
-                                    <i class="bi bi-check-circle"></i> Подтверждение <span class="text-danger">*</span>
-                                </label>
-                                <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Повторите пароль" />
-                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Phone" class="form-label">
-                                    <i class="bi bi-telephone"></i> Телефон
-                                </label>
-                                <input asp-for="Phone" class="form-control" placeholder="+7 (999) 123-45-67" />
-                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="FullName" class="form-label fw-bold">
+                                        <i class="bi bi-card-text"></i> ФИО <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="FullName" class="form-control"
+                                           placeholder="Иванов Иван Иванович"
+                                           maxlength="100"
+                                           minlength="5" />
+                                    <span asp-validation-for="FullName" class="text-danger"></span>
+                                    <small class="text-muted">от 5 до 100 символов (только буквы, пробелы, дефисы)</small>
+                                </div>
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Email" class="form-label">
-                                    <i class="bi bi-envelope"></i> Email
-                                </label>
-                                <input asp-for="Email" class="form-control" placeholder="example@mail.ru" />
-                                <span asp-validation-for="Email" class="text-danger"></span>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Password" class="form-label fw-bold">
+                                        <i class="bi bi-lock"></i> Пароль <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Password" class="form-control"
+                                           type="password"
+                                           placeholder="Введите пароль"
+                                           maxlength="100"
+                                           minlength="6" />
+                                    <span asp-validation-for="Password" class="text-danger"></span>
+                                    <small class="text-muted">от 6 до 100 символов</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="ConfirmPassword" class="form-label fw-bold">
+                                        <i class="bi bi-check-circle"></i> Подтверждение <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ConfirmPassword" class="form-control"
+                                           type="password"
+                                           placeholder="Повторите пароль"
+                                           maxlength="100" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label asp-for="PassportData" class="form-label">
-                                <i class="bi bi-file-text"></i> Паспортные данные
-                            </label>
-                            <input asp-for="PassportData" class="form-control" placeholder="Серия и номер паспорта" />
-                            <span asp-validation-for="PassportData" class="text-danger"></span>
-                        </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Phone" class="form-label">
+                                        <i class="bi bi-telephone"></i> Телефон
+                                    </label>
+                                    <input asp-for="Phone" class="form-control"
+                                           placeholder="+7 (999) 123-45-67"
+                                           maxlength="20" />
+                                    <span asp-validation-for="Phone" class="text-danger"></span>
+                                    <small class="text-muted">от 10 до 20 символов</small>
+                                </div>
 
-                        <hr class="my-4">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Email" class="form-label">
+                                        <i class="bi bi-envelope"></i> Email
+                                    </label>
+                                    <input asp-for="Email" class="form-control"
+                                           type="email"
+                                           placeholder="example@mail.ru"
+                                           maxlength="100" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                    <small class="text-muted">от 5 до 100 символов</small>
+                                </div>
+                            </div>
 
-                        <button type="submit" class="btn btn-yellow w-100 py-2 fw-bold">
-                            <i class="bi bi-person-plus"></i> Зарегистрироваться
-                        </button>
+                            <div class="mb-3">
+                                <label asp-for="PassportData" class="form-label">
+                                    <i class="bi bi-file-text"></i> Паспортные данные
+                                </label>
+                                <input asp-for="PassportData" class="form-control"
+                                       placeholder="Серия и номер паспорта"
+                                       maxlength="50"
+                                       minlength="10" />
+                                <span asp-validation-for="PassportData" class="text-danger"></span>
+                                <small class="text-muted">от 10 до 50 символов (только цифры и пробелы)</small>
+                            </div>
 
-                        <div class="text-center mt-3">
-                            <p class="mb-0">Уже есть аккаунт?</p>
-                            <a asp-action="Login" class="btn btn-outline-yellow mt-2 w-100">
-                                <i class="bi bi-box-arrow-in-right"></i> Войти
-                            </a>
-                        </div>
-                    </form>
+                            <hr class="my-4">
+
+                            <button type="submit" class="btn btn-yellow w-100 py-2 fw-bold">
+                                <i class="bi bi-person-plus"></i> Зарегистрироваться
+                            </button>
+
+                            <div class="text-center mt-3">
+                                <p class="mb-0">Уже есть аккаунт?</p>
+                                <a asp-action="Login" class="btn btn-outline-yellow mt-2 w-100">
+                                    <i class="bi bi-box-arrow-in-right"></i> Войти
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    
+        <script>
+            $(document).ready(function() {
+                // Валидация телефона в реальном времени
+                $('#Phone').on('input', function() {
+                    var value = $(this).val();
+                    var cleaned = value.replace(/[^0-9+\s\-\(\)]/g, '');
+                    if (value !== cleaned) {
+                        $(this).val(cleaned);
+                    }
+                });
+            
+                // Валидация паспортных данных (только цифры и пробелы)
+                $('#PassportData').on('input', function() {
+                    var value = $(this).val();
+                    var cleaned = value.replace(/[^0-9\s]/g, '');
+                    if (value !== cleaned) {
+                        $(this).val(cleaned);
+                    }
+                });
+            
+                // Валидация ФИО (только буквы, пробелы, дефисы)
+                $('#FullName').on('input', function() {
+                    var value = $(this).val();
+                    var cleaned = value.replace(/[^а-яА-Яa-zA-Z\s\-]/g, '');
+                    if (value !== cleaned) {
+                        $(this).val(cleaned);
+                    }
+                });
+            
+                // Валидация логина (только буквы, цифры, _)
+                $('#Login').on('input', function() {
+                    var value = $(this).val();
+                    var cleaned = value.replace(/[^a-zA-Z0-9_]/g, '');
+                    if (value !== cleaned) {
+                        $(this).val(cleaned);
+                    }
+                });
+            
+                // Счетчик символов для полей
+                function updateCharCount(input, maxLength) {
+                    var length = $(input).val().length;
+                    var counter = $(input).siblings('.char-counter');
+                    if (counter.length === 0) {
+                        counter = $('<small class="char-counter text-muted mt-1 d-block"></small>');
+                        $(input).after(counter);
+                    }
+                    counter.text(length + ' / ' + maxLength);
+                    if (length > maxLength) {
+                        counter.addClass('text-danger');
+                    } else {
+                        counter.removeClass('text-danger');
+                    }
+                }
+            
+                // Применяем счетчики
+                $('#Login, #FullName, #Phone, #Email, #PassportData, #Password, #ConfirmPassword').each(function() {
+                    var maxLength = $(this).attr('maxlength');
+                    if (maxLength) {
+                        updateCharCount(this, maxLength);
+                        $(this).on('input', function() {
+                            updateCharCount(this, maxLength);
+                        });
+                    }
+                });
+            });
+        </script>
+    }

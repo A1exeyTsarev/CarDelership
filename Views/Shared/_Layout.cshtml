@@ -7,254 +7,244 @@
 
     <!-- Фавикон -->
     <link rel="icon" type="image/jpeg" href="~/images/logo.jpg">
-    <link rel="shortcut icon" type="image/jpeg" href="~/images/logo.jpg">
+        <link rel="shortcut icon" type="image/jpeg" href="~/images/logo.jpg">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <!-- Bootstrap CSS -->
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+            <!-- Bootstrap Icons -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-    <!-- КАСТОМНЫЕ СТИЛИ -->
-    <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CarDelership.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <!-- Логотип -->
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/images/logo.jpg" alt="CarDelership" height="40" class="d-inline-block align-text-top me-2">
-                    CarDelership
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">О нас</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Catalog" asp-action="Index">Каталог</a>
-                        </li>
+            <!-- КАСТОМНЫЕ СТИЛИ -->
+            <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
+            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+            <link rel="stylesheet" href="~/CarDelership.styles.css" asp-append-version="true" />
+        </head>
+        <body>
+            <header>
+                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                    <div class="container-fluid">
+                        <!-- Логотип -->
+                        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                            <img src="~/images/logo.jpg" alt="CarDelership" height="40" class="d-inline-block align-text-top me-2">
+                                CarDelership
+                            </a>
+                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+                            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                                <ul class="navbar-nav flex-grow-1">
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Главная</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="News" asp-action="Index">📰 Новости и акции</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">О нас</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Catalog" asp-action="Index">Каталог</a>
+                                    </li>
                         
-                        <!-- Пункты для менеджера/администратора -->
-                        @if (User.Identity.IsAuthenticated && (Context.Session.GetString("UserRole") == "Менеджер" || Context.Session.GetString("UserRole") == "Администратор"))
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="managementDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-gear-fill" style="color: #ffc107;"></i> Управление
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="OrderManagement" asp-action="Index">
-                                            <i class="bi bi-truck"></i> Управление заказами
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="CarManagement" asp-action="Index">
-                                            <i class="bi bi-car-front"></i> Управление товарами
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
-                                            <i class="bi bi-person"></i> Мой профиль
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        
-                        <!-- Пункты для администратора (дополнительно) -->
-                        @if (User.Identity.IsAuthenticated && Context.Session.GetString("UserRole") == "Администратор")
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-shield-lock-fill" style="color: #dc3545;"></i> Админ
-                                </a>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
-                                            <i class="bi bi-speedometer2"></i> Панель управления
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Admin" asp-action="News">
-                                            <i class="bi bi-newspaper"></i> Новости и акции
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
-                                            <i class="bi bi-people"></i> Пользователи
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Feedbacks">
-                                            <i class="bi bi-chat-dots"></i> Обратная связь
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="AdminComments" asp-action="Index">
-                                            <i class="bi bi-star"></i> Отзывы
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                    </ul>
-
-                    <!-- Кнопки справа -->
-                    <ul class="navbar-nav ms-auto">
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <!-- Иконка избранного -->
-                            <li class="nav-item me-2 position-relative">
-                                <a class="nav-link" asp-controller="Wishlist" asp-action="Index" title="Избранное">
-                                    <i class="bi bi-heart-fill text-danger"></i>
-                                    @await Component.InvokeAsync("WishlistCount")
-                                </a>
-                            </li>
-                            
-                            <!-- Иконка корзины -->
-                            <li class="nav-item me-3 position-relative">
-                                <a class="nav-link" asp-controller="Cart" asp-action="Index" title="Корзина">
-                                    <i class="bi bi-cart-fill"></i>
-                                    @await Component.InvokeAsync("CartCount")
-                                </a>
-                            </li>
-                            
-                            <!-- Профиль пользователя -->
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
-                                            <i class="bi bi-person"></i> Личный кабинет
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Profile" asp-action="Orders">
-                                            <i class="bi bi-box-seam"></i> Мои заказы
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Wishlist" asp-action="Index">
-                                            <i class="bi bi-heart"></i> Избранное
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Cart" asp-action="Index">
-                                            <i class="bi bi-cart"></i> Корзина
-                                        </a>
-                                    </li>
-                                    
-                                    <!-- Разделитель -->
-                                    <li><hr class="dropdown-divider"></li>
-                                    
-                                    <!-- Пункт ПОДДЕРЖКА -->
-                                    <!-- Пункт ПОДДЕРЖКА - показываем только НЕ администраторам -->
-                                    @if (Context.Session.GetString("UserRole") != "Администратор")
+                                    <!-- Пункты для менеджера/администратора -->
+                                    @if (User.Identity.IsAuthenticated && (Context.Session.GetString("UserRole") == "Менеджер" || Context.Session.GetString("UserRole") == "Администратор"))
                                     {
-                                        <li>
-                                            <a class="dropdown-item" asp-controller="Support" asp-action="Index">
-                                                <i class="bi bi-headset me-2" style="color: #ffc107;"></i> 
-                                                Поддержка
-                                                <span class="badge bg-warning text-dark ms-2" id="unreadSupportBadge" style="display: none;">Новое</span>
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle text-dark" href="#" id="managementDropdown" role="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-gear-fill" style="color: #ffc107;"></i> Управление
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="OrderManagement" asp-action="Index">
+                                                        <i class="bi bi-truck"></i> Управление заказами
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="CarManagement" asp-action="Index">
+                                                        <i class="bi bi-car-front"></i> Управление товарами
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                                        <i class="bi bi-person"></i> Мой профиль
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    }
+                        
+                                    <!-- Пункты для администратора -->
+                                    @if (User.Identity.IsAuthenticated && Context.Session.GetString("UserRole") == "Администратор")
+                                    {
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-shield-lock-fill" style="color: #dc3545;"></i> Админ
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                                        <i class="bi bi-people"></i> Пользователи
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Feedbacks">
+                                                        <i class="bi bi-chat-dots"></i> Обратная связь
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="AdminComments" asp-action="Index">
+                                                        <i class="bi bi-star"></i> Отзывы
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    }
+                                </ul>
+
+                                <!-- Кнопки справа -->
+                                <ul class="navbar-nav ms-auto">
+                                    @if (User.Identity.IsAuthenticated)
+                                    {
+                                        <!-- Иконка избранного -->
+                                        <li class="nav-item me-2 position-relative">
+                                            <a class="nav-link" asp-controller="Wishlist" asp-action="Index" title="Избранное">
+                                                <i class="bi bi-heart-fill text-danger"></i>
+                                                @await Component.InvokeAsync("WishlistCount")
                                             </a>
                                         </li>
-            
-                                        <!-- Разделитель -->
-                                        <li><hr class="dropdown-divider"></li>
+                            
+                                        <!-- Иконка корзины -->
+                                        <li class="nav-item me-3 position-relative">
+                                            <a class="nav-link" asp-controller="Cart" asp-action="Index" title="Корзина">
+                                                <i class="bi bi-cart-fill"></i>
+                                                @await Component.InvokeAsync("CartCount")
+                                            </a>
+                                        </li>
+                            
+                                        <!-- Профиль пользователя -->
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                            </a>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                                                        <i class="bi bi-person"></i> Личный кабинет
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Profile" asp-action="Orders">
+                                                        <i class="bi bi-box-seam"></i> Мои заказы
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Wishlist" asp-action="Index">
+                                                        <i class="bi bi-heart"></i> Избранное
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Cart" asp-action="Index">
+                                                        <i class="bi bi-cart"></i> Корзина
+                                                    </a>
+                                                </li>
+                                    
+                                                <!-- Разделитель -->
+                                                <li><hr class="dropdown-divider"></li>
+                                    
+                                                <!-- Пункт ПОДДЕРЖКА - показываем только НЕ администраторам -->
+                                                @if (Context.Session.GetString("UserRole") != "Администратор")
+                                                {
+                                                    <li>
+                                                        <a class="dropdown-item" asp-controller="Feedback" asp-action="Index">
+                                                            <i class="bi bi-headset me-2" style="color: #ffc107;"></i>
+                                                            Поддержка
+                                                            <span class="badge bg-warning text-dark ms-2" id="unreadSupportBadge" style="display: none;">Новое</span>
+                                                        </a>
+                                                    </li>
+                                        
+                                                    <!-- Разделитель -->
+                                                    <li><hr class="dropdown-divider"></li>
+                                                }
+                                    
+                                                <li>
+                                                    <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
+                                                        <i class="bi bi-box-arrow-right"></i> Выйти
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
                                     }
-                                    
-                                    <!-- Разделитель -->
-                                    <li><hr class="dropdown-divider"></li>
-                                    
-                                    <li>
-                                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">
-                                            <i class="bi bi-box-arrow-right"></i> Выйти
-                                        </a>
-                                    </li>
+                                    else
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link btn-yellow px-4 py-2 rounded-pill" asp-controller="Account" asp-action="Login">
+                                                <i class="bi bi-box-arrow-in-right"></i> Войти
+                                            </a>
+                                        </li>
+                                        <li class="nav-item ms-2">
+                                            <a class="nav-link btn-outline-yellow px-4 py-2 rounded-pill" asp-controller="Account" asp-action="Register">
+                                                Регистрация
+                                            </a>
+                                        </li>
+                                    }
                                 </ul>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link btn-yellow px-4 py-2 rounded-pill" asp-controller="Account" asp-action="Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Войти
-                                </a>
-                            </li>
-                            <li class="nav-item ms-2">
-                                <a class="nav-link btn-outline-yellow px-4 py-2 rounded-pill" asp-controller="Account" asp-action="Register">
-                                    Регистрация
-                                </a>
-                            </li>
-                        }
-                    </ul>
+                            </div>
+                        </div>
+                    </nav>
+                </header>
+
+                <div class="container">
+                    <main role="main" class="pb-3">
+                        @RenderBody()
+                    </main>
                 </div>
-            </div>
-        </nav>
-    </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+                <footer class="custom-footer">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 text-center text-md-start">
+                                <img src="~/images/logo.jpg" alt="CarDelership" height="30" class="me-2">
+                                    <span>&copy; 2026 - CarDelership</span>
+                                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="ms-2">О компании</a>
+                                    <a asp-area="" asp-controller="News" asp-action="Index" class="ms-3">📰 Новости и акции</a>
+                                </div>
+                                <div class="col-md-6 text-center text-md-end">
+                                    <small class="footer-slogan">⭐ Хорошие машины продаются здесь ⭐</small>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
 
-    <footer class="custom-footer">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <img src="~/images/logo.jpg" alt="CarDelership" height="30" class="me-2">
-                    <span>&copy; 2026 - CarDelership</span>
-                    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="ms-2">О компании</a>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <small class="footer-slogan">⭐ Хорошие машины продаются здесь ⭐</small>
-                </div>
-            </div>
-        </div>
-    </footer>
+                    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+                    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+                    <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-    <script>
-        // Функция для проверки наличия непрочитанных обращений в поддержку
-        function checkUnreadSupport() {
-            $.get('/Support/HasUnread', function(data) {
-                if (data.hasUnread) {
-                    $('#unreadSupportBadge').show();
-                } else {
-                    $('#unreadSupportBadge').hide();
-                }
-            });
-        }
+                    <script>
+                            // Функция для проверки наличия непрочитанных обращений в поддержку
+                            function checkUnreadSupport() {
+                                $.get('/Feedback/HasUnread', function(data) {
+                                    if (data.hasUnread) {
+                                        $('#unreadSupportBadge').show();
+                                    } else {
+                                        $('#unreadSupportBadge').hide();
+                                    }
+                                });
+                            }
         
-        // Проверяем каждые 30 секунд
-        @if (User.Identity.IsAuthenticated)
-        {
-            <text>
-            $(document).ready(function() {
-                checkUnreadSupport();
-                setInterval(checkUnreadSupport, 30000);
-            });
-            </text>
-        }
-    </script>
+                            // Проверяем каждые 30 секунд
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                    <text>
+                                            $(document).ready(function() {
+                                                checkUnreadSupport();
+                                                setInterval(checkUnreadSupport, 30000);
+                                            });
+                                    </text>
+                            }
+                    </script>
 
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
+                    @await RenderSectionAsync("Scripts", required: false)
+                </body>
+            </html>

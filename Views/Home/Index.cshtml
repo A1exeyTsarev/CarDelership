@@ -4,90 +4,231 @@
     ViewData["Title"] = "Главная";
 }
 
-<!-- Герой секция с черно-желтым градиентом -->
-<div class="hero-section text-center">
-    <div class="container">
-        <h1 class="hero-title">🏁 Хорошие машины продаются здесь</h1>
-        <p class="hero-subtitle">Легковые автомобили от ведущих производителей</p>
-        <a href="/Account/Login" class="btn btn-yellow btn-lg mt-3 px-5 py-2 rounded-pill">
-            🔐 Войти в каталог
-        </a>
-    </div>
-</div>
-
-<div class="container">
-    <section class="popular-products mb-5">
-        <div class="text-center mb-4">
-            
-            <p class="text-muted mt-2">Самые востребованные модели этого месяца</p>
+<!-- Слайд-бар (карусель) -->
+<div class="hero-slider mb-5">
+    <div id="mainCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <!-- Индикаторы -->
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
         </div>
-
-        @if (Model.PopularCars != null && Model.PopularCars.Any())
-        {
-            <div class="row g-4">
-                @foreach (var car in Model.PopularCars)
-                {
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card car-card h-100">
-                            <div style="position: relative; height: 200px; overflow: hidden;">
-                                @{
-                                    var discountPercent = 0;
-                                    if (car.DiscountPrice > 0 && car.DiscountPrice < car.Price)
-                                    {
-                                        discountPercent = (int)((1 - (double)car.DiscountPrice / (double)car.Price) * 100);
-                                    }
-                                }
-                                @if (discountPercent > 0)
-                                {
-                                    <div class="discount-badge">
-                                        -@discountPercent%
-                                    </div>
-                                }
-
-                                @* ВЫВОДИМ ПЕРВУЮ КАРТИНКУ ИЗ ГАЛЕРЕИ *@
-                                @{
-                                    var imagePath = "/images/logo.jpg"; // по умолчанию
-                                    if (car.CarImages != null && car.CarImages.Any())
-                                    {
-                                        imagePath = "/images/" + car.CarImages.First().ImageName;
-                                    }
-                                }
-                                <img src="@imagePath" class="card-img-top" style="width: 100%; height: 100%; object-fit: cover;" alt="@car.Name">
+        
+        <!-- Слайды -->
+        <div class="carousel-inner rounded-4">
+            <div class="carousel-item active" data-bs-interval="5000">
+                <div class="carousel-image-wrapper">
+                    <img src="~/images/bmw-3series-1.jpg" class="d-block w-100 carousel-image" alt="BMW 3 Series">
+                    </div>
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2 class="fw-bold">BMW 3 Series</h2>
+                        <p class="fs-5">Спортивный седан премиум-класса</p>
+                        <a href="/Catalog/Details/4" class="btn btn-yellow btn-lg">Подробнее →</a>
+                    </div>
+                </div>
+                <div class="carousel-item" data-bs-interval="5000">
+                    <div class="carousel-image-wrapper">
+                        <img src="~/images/bmw-x5-1.jpg" class="d-block w-100 carousel-image" alt="BMW X5">
+                        </div>
+                        <div class="carousel-caption d-none d-md-block">
+                            <h2 class="fw-bold">BMW X5</h2>
+                            <p class="fs-5">Роскошный внедорожник для любых дорог</p>
+                            <a href="/Catalog/Details/5" class="btn btn-yellow btn-lg">Подробнее →</a>
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="5000">
+                        <div class="carousel-image-wrapper">
+                            <img src="~/images/bmw-x3-1.jpg" class="d-block w-100 carousel-image" alt="BMW X3">
                             </div>
-                            <div class="card-body">
-                                <h5 class="card-title">@car.Name</h5>
-                                <p class="text-muted small">@car.Year г.</p>
-                                <div>
-                                    @if (discountPercent > 0)
-                                    {
-                                        <span class="car-old-price">@car.Price.ToString("N0") ₽</span>
-                                        <br />
-                                        <strong class="car-price">@car.DiscountPrice.ToString("N0") ₽</strong>
-                                    }
-                                    else
-                                    {
-                                        <strong class="car-price">@car.Price.ToString("N0") ₽</strong>
-                                    }
+                            <div class="carousel-caption d-none d-md-block">
+                                <h2 class="fw-bold">BMW X3</h2>
+                                <p class="fs-5">Компактный и динамичный кроссовер</p>
+                                <a href="/Catalog/Details/10" class="btn btn-yellow btn-lg">Подробнее →</a>
+                            </div>
+                        </div>
+                        <div class="carousel-item" data-bs-interval="5000">
+                            <div class="carousel-image-wrapper">
+                                <img src="~/images/toyota-camry-2.jpg" class="d-block w-100 carousel-image" alt="Toyota Camry">
                                 </div>
-                                <div class="d-flex gap-2 mt-3">
-                                    <button class="btn btn-yellow flex-grow-1 add-to-cart-btn" data-car-id="@car.Car_Id">🛒 В корзину</button>
-                                    <button class="btn btn-outline-yellow add-to-wishlist" data-car-id="@car.Car_Id">❤️</button>
+                                <div class="carousel-caption d-none d-md-block">
+                                    <h2 class="fw-bold">Toyota Camry</h2>
+                                    <p class="fs-5">Надежный бизнес-седан</p>
+                                    <a href="/Catalog/Details/6" class="btn btn-yellow btn-lg">Подробнее →</a>
                                 </div>
                             </div>
                         </div>
+        
+                        <!-- Кнопки управления -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Предыдущий</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Следующий</span>
+                        </button>
                     </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <p class="text-muted">Нет доступных автомобилей</p>
-            </div>
-        }
+                </div>
 
-        <div class="text-center mt-5">
-            <a href="/Catalog" class="btn btn-outline-yellow btn-lg px-5 py-2 rounded-pill">Смотреть весь каталог →</a>
-        </div>
-    </section>
-</div>
+                <div class="container">
+                    <section class="popular-products mb-5">
+                        <div class="text-center mb-4">
+                            <h2 class="fw-bold">⭐ Популярные автомобили</h2>
+                            <p class="text-muted mt-2">Самые востребованные модели этого месяца</p>
+                        </div>
+
+                        @if (Model.PopularCars != null && Model.PopularCars.Any())
+                        {
+                            <div class="row g-4">
+                                @foreach (var car in Model.PopularCars)
+                                {
+                                    <div class="col-md-3 col-sm-6">
+                                        <div class="card car-card h-100">
+                                            <div style="position: relative; height: 200px; overflow: hidden; cursor: pointer;" onclick="location.href='/Catalog/Details/@car.Car_Id'">
+                                                @{
+                                                    var discountPercent = 0;
+                                                    if (car.DiscountPrice > 0 && car.DiscountPrice < car.Price)
+                                                    {
+                                                        discountPercent = (int)((1 - (double)car.DiscountPrice / (double)car.Price) * 100);
+                                                    }
+                                                }
+                                                @if (discountPercent > 0)
+                                                {
+                                                    <div class="discount-badge">
+                                                        -@discountPercent%
+                                                    </div>
+                                                }
+
+                                                @{
+                                                    var imagePath = "/images/logo.jpg";
+                                                    if (car.CarImages != null && car.CarImages.Any())
+                                                    {
+                                                        imagePath = "/images/" + car.CarImages.First().ImageName;
+                                                    }
+                                                }
+                                                <img src="@imagePath" class="card-img-top" style="width: 100%; height: 100%; object-fit: cover;" alt="@car.Name">
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title">@car.Name</h5>
+                                                <p class="text-muted small">@car.Year г. | @car.Mileage.ToString("N0") км</p>
+                                                <div>
+                                                    @if (discountPercent > 0)
+                                                    {
+                                                        <span class="car-old-price">@car.Price.ToString("N0") ₽</span>
+                                                        <br />
+                                                        <strong class="car-price">@car.DiscountPrice.ToString("N0") ₽</strong>
+                                                    }
+                                                    else
+                                                    {
+                                                        <strong class="car-price">@car.Price.ToString("N0") ₽</strong>
+                                                    }
+                                                </div>
+                                                <div class="d-flex gap-2 mt-3">
+                                                    <button class="btn btn-yellow flex-grow-1 add-to-cart-btn" data-car-id="@car.Car_Id">
+                                                        <i class="bi bi-cart-plus"></i> В корзину
+                                                    </button>
+                                                    <button class="btn btn-outline-yellow add-to-wishlist" data-car-id="@car.Car_Id">
+                                                        <i class="bi bi-heart"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <p class="text-muted">Нет доступных автомобилей</p>
+                            </div>
+                        }
+
+                        <div class="text-center mt-5">
+                            <a href="/Catalog" class="btn btn-outline-yellow btn-lg px-5 py-2 rounded-pill">
+                                Смотреть весь каталог →
+                            </a>
+                        </div>
+                    </section>
+                </div>
+
+                @section Scripts {
+                    <script>
+                        $(document).ready(function() {
+                            // Добавление в корзину
+                            $('.add-to-cart-btn').click(function(e) {
+                                e.stopPropagation();
+                                var carId = $(this).data('car-id');
+                                var button = $(this);
+                                var originalHtml = button.html();
+                
+                                button.html('<i class="bi bi-hourglass-split"></i> Добавляется...');
+                                button.prop('disabled', true);
+                
+                                $.ajax({
+                                    url: '/Cart/Add',
+                                    type: 'POST',
+                                    data: { carId: carId, quantity: 1 },
+                                    success: function(response) {
+                                        if (response.success) {
+                                            button.html('<i class="bi bi-check-circle"></i> Добавлено!');
+                                            button.removeClass('btn-yellow').addClass('btn-success');
+                            
+                                            setTimeout(function() {
+                                                button.html(originalHtml);
+                                                button.removeClass('btn-success').addClass('btn-yellow');
+                                                button.prop('disabled', false);
+                                            }, 2000);
+                                        } else {
+                                            alert(response.message || 'Ошибка при добавлении');
+                                            button.html(originalHtml);
+                                            button.prop('disabled', false);
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        if (xhr.status === 401) {
+                                            alert('Необходимо войти в систему');
+                                            window.location.href = '/Account/Login';
+                                        } else {
+                                            alert('Ошибка при добавлении в корзину');
+                                        }
+                                        button.html(originalHtml);
+                                        button.prop('disabled', false);
+                                    }
+                                });
+                            });
+            
+                            // Добавление в избранное
+                            $('.add-to-wishlist').click(function(e) {
+                                e.stopPropagation();
+                                var carId = $(this).data('car-id');
+                                var button = $(this);
+                
+                                $.ajax({
+                                    url: '/Wishlist/Add',
+                                    type: 'POST',
+                                    data: { carId: carId },
+                                    success: function(response) {
+                                        if (response.success) {
+                                            button.html('<i class="bi bi-heart-fill text-danger"></i>');
+                                            setTimeout(function() {
+                                                button.html('<i class="bi bi-heart"></i>');
+                                            }, 2000);
+                                        } else {
+                                            alert(response.message || 'Ошибка при добавлении');
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        if (xhr.status === 401) {
+                                            alert('Необходимо войти в систему');
+                                            window.location.href = '/Account/Login';
+                                        } else {
+                                            alert('Ошибка при добавлении в избранное');
+                                        }
+                                    }
+                                });
+                            });
+                        });
+                    </script>
+                }

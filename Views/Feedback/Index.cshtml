@@ -9,7 +9,8 @@
             <i class="bi bi-headset me-2" style="color: #ffc107;"></i>
             Мои обращения в поддержку
         </h2>
-        <a href="/Support/Create" class="btn btn-yellow">
+        <a href="/Feedback/Create" class="btn btn-yellow">
+            <!-- Исправлено -->
             <i class="bi bi-plus-lg"></i> Новое обращение
         </a>
     </div>
@@ -37,7 +38,7 @@
                 <i class="bi bi-chat-dots fs-1 text-muted"></i>
                 <h5 class="mt-3">У вас пока нет обращений</h5>
                 <p class="text-muted">Создайте новое обращение, и мы поможем вам</p>
-                <a href="/Support/Create" class="btn btn-yellow">Создать обращение</a>
+                <a href="/Feedback/Create" class="btn btn-yellow">Создать обращение</a>  <!-- Исправлено -->
             </div>
         </div>
     }
@@ -80,7 +81,8 @@
                             }
 
                             <div class="btn-group w-100">
-                                <a href="/Support/Details/@feedback.Feedback_Id" class="btn btn-outline-primary btn-sm">
+                                <a href="/Feedback/Details/@feedback.Feedback_Id" class="btn btn-outline-yellow btn-sm">
+                                    <!-- Исправлено -->
                                     <i class="bi bi-eye"></i> Подробнее
                                 </a>
                                 @if (!feedback.IsClosed && !feedback.IsClosedByUser)
@@ -99,21 +101,28 @@
     }
 </div>
 
-<script>
-    function closeFeedback(id) {
-        if (confirm('Закрыть обращение? Вы не сможете добавить новые сообщения.')) {
-            var token = $('input[name="__RequestVerificationToken"]').val();
-            $.ajax({
-                url: '/Support/Close/' + id,
-                type: 'POST',
-                data: { '__RequestVerificationToken': token },
-                success: function() {
-                    location.reload();
-                },
-                error: function() {
-                    alert('Ошибка при закрытии обращения');
-                }
-            });
+@section Scripts {
+    <script>
+        // Получаем токен антифоргери
+        var token = $('input[name="__RequestVerificationToken"]').val();
+        if (!token) {
+            token = $('form').first().find('input[name="__RequestVerificationToken"]').val();
         }
-    }
-</script>
+        
+        function closeFeedback(id) {
+            if (confirm('Закрыть обращение? Вы не сможете добавить новые сообщения.')) {
+                $.ajax({
+                    url: '/Feedbacks/Close/' + id,  // Исправлено с Support на Feedback
+                    type: 'POST',
+                    data: { '__RequestVerificationToken': token },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('Ошибка при закрытии обращения');
+                    }
+                });
+            }
+        }
+    </script>
+}

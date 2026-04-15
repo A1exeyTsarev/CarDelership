@@ -6,12 +6,11 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white border-bottom">
-                    <h4 class="mb-0">
-                        <i class="bi bi-chat-dots me-2" style="color: #ffc107;"></i>
-                        Новое обращение в поддержку
-                    </h4>
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-chat-dots text-warning"></i> Новое обращение в поддержку
+                    </h5>
                 </div>
                 <div class="card-body">
                     @if (TempData["Error"] != null)
@@ -22,11 +21,11 @@
                         </div>
                     }
 
-                    <form method="post" asp-action="Create" asp-controller="Support">
+                    <form method="post" asp-action="Create" asp-controller="Feedbacks">
                         @Html.AntiForgeryToken()
 
                         <div class="mb-3">
-                            <label class="form-label">Тема обращения *</label>
+                            <label class="form-label fw-bold">Тема обращения *</label>
                             <select asp-for="Subject" class="form-select" required>
                                 <option value="">Выберите тему</option>
                                 <option value="Вопрос о товаре">Вопрос о товаре</option>
@@ -40,22 +39,29 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Ваше имя *</label>
-                            <input asp-for="Name" class="form-control" required />
+                            <label class="form-label fw-bold">Ваше имя *</label>
+                            <input asp-for="Name" class="form-control" required maxlength="100" />
                             <span asp-validation-for="Name" class="text-danger"></span>
+                            <small class="text-muted">макс. 100 символов</small>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Email *</label>
-                            <input asp-for="Email" type="email" class="form-control" required />
+                            <label class="form-label fw-bold">Email *</label>
+                            <input asp-for="Email" type="email" class="form-control" required maxlength="100" />
                             <span asp-validation-for="Email" class="text-danger"></span>
+                            <small class="text-muted">макс. 100 символов</small>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Сообщение *</label>
+                            <label class="form-label fw-bold">Сообщение *</label>
                             <textarea asp-for="Message" class="form-control" rows="6" required
+                                      maxlength="5000" id="messageText"
                                       placeholder="Опишите подробно вашу проблему или вопрос..."></textarea>
                             <span asp-validation-for="Message" class="text-danger"></span>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">от 10 до 5000 символов</small>
+                                <small class="text-muted" id="charCount">0 / 5000</small>
+                            </div>
                         </div>
 
                         <div class="alert alert-info">
@@ -67,7 +73,7 @@
                             <button type="submit" class="btn btn-yellow">
                                 <i class="bi bi-send"></i> Отправить
                             </button>
-                            <a href="/Support/Index" class="btn btn-outline-secondary">
+                            <a href="/Feedbacks/Index" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Назад
                             </a>
                         </div>
@@ -81,4 +87,25 @@
 @section Scripts {
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    
+    <script>
+        // Счетчик символов для сообщения
+        var textarea = document.getElementById('messageText');
+        var charCounter = document.getElementById('charCount');
+        
+        if (textarea && charCounter) {
+            function updateCounter() {
+                var len = textarea.value.length;
+                charCounter.innerHTML = len + ' / 5000 символов';
+                if (len >= 5000) {
+                    charCounter.style.color = 'red';
+                } else {
+                    charCounter.style.color = '#6c757d';
+                }
+            }
+            
+            textarea.addEventListener('input', updateCounter);
+            updateCounter();
+        }
+    </script>
 }

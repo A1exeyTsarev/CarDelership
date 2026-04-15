@@ -26,54 +26,73 @@ namespace CarDelership.Controllers
             return View();
         }
 
-        // POST: /Account/Login
+        // POST: /Account/Login (ИСПРАВЛЕНА ВЕРСИЯ С ПРОВЕРКОЙ БЛОКИРОВКИ)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (ModelState.IsValid)
             {
+                // Сначала ищем пользователя по логину (без проверки IsActive)
                 var user = await _context.Users
                     .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Login == model.Login && u.IsActive);
+                    .FirstOrDefaultAsync(u => u.Login == model.Login);
 
-                if (user != null && user.Password == model.Password)
+                // Проверка: пользователь не найден
+                if (user == null)
                 {
-                    // Сохраняем ID пользователя в сессию
-                    HttpContext.Session.SetInt32("UserId", user.User_Id);
-
-                    // Сохраняем роль пользователя в сессию (русские названия)
-                    string userRole = user.Role?.Name ?? "Клиент";
-                    HttpContext.Session.SetString("UserRole", userRole);
-
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
-                        new Claim(ClaimTypes.Name, user.FullName ?? user.Login),
-                        new Claim(ClaimTypes.Email, user.Email ?? ""),
-                        new Claim("Login", user.Login),
-                        new Claim(ClaimTypes.Role, userRole)
-                    };
-
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe,
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
-                    };
-
-                    await HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(claimsIdentity),
-                        authProperties);
-
-                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                        return Redirect(returnUrl);
-
-                    return RedirectToAction("Index", "Catalog");
+                    ModelState.AddModelError("", "Неверный логин или пароль");
+                    return View(model);
                 }
 
-                ModelState.AddModelError("", "Неверный логин или пароль");
+                // Проверка: пользователь заблокирован
+                if (!user.IsActive)
+                {
+                    ModelState.AddModelError("", "Ваш аккаунт заблокирован. Обратитесь к администратору.");
+                    return View(model);
+                }
+
+                // Проверка: правильный пароль
+                if (user.Password != model.Password)
+                {
+                    ModelState.AddModelError("", "Неверный логин или пароль");
+                    return View(model);
+                }
+
+                // ВСЕ ПРОВЕРКИ ПРОЙДЕНЫ - ВХОД РАЗРЕШЕН
+
+                // Сохраняем ID пользователя в сессию
+                HttpContext.Session.SetInt32("UserId", user.User_Id);
+
+                // Сохраняем роль пользователя в сессию
+                string userRole = user.Role?.Name ?? "Клиент";
+                HttpContext.Session.SetString("UserRole", userRole);
+
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.FullName ?? user.Login),
+                    new Claim(ClaimTypes.Email, user.Email ?? ""),
+                    new Claim("Login", user.Login),
+                    new Claim(ClaimTypes.Role, userRole)
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                };
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties);
+
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                return RedirectToAction("Index", "Catalog");
             }
 
             return View(model);

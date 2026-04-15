@@ -7,11 +7,11 @@ using CarDelership.Models;
 namespace CarDelership.Controllers
 {
     [Authorize]
-    public class SupportController : Controller
+    public class FeedbackController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public SupportController(ApplicationDbContext context)
+        public FeedbackController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -22,8 +22,9 @@ namespace CarDelership.Controllers
         {
             var userId = GetCurrentUserId();
 
+            // ✅ ИСПРАВЛЕНО: используем правильное имя поля User_Id
             var feedbacks = await _context.Feedbacks
-                .Where(f => f.UserId == userId)
+                .Where(f => f.User_Id == userId)  // Было UserId, стало User_Id
                 .OrderByDescending(f => f.CreatedAt)
                 .ToListAsync();
 
@@ -61,8 +62,8 @@ namespace CarDelership.Controllers
                 var user = await GetCurrentUser();
                 var userId = GetCurrentUserId();
 
-                feedback.UserId = userId;
-                feedback.UserName = user?.FullName ?? User.Identity.Name;
+                // ✅ ИСПРАВЛЕНО: используем правильное имя поля User_Id
+                feedback.User_Id = userId;           // Было UserId, стало User_Id
                 feedback.CreatedAt = DateTime.Now;
                 feedback.IsProcessed = false;
                 feedback.IsClosed = false;
@@ -87,8 +88,9 @@ namespace CarDelership.Controllers
         {
             var userId = GetCurrentUserId();
 
+            // ✅ ИСПРАВЛЕНО: используем правильное имя поля User_Id
             var feedback = await _context.Feedbacks
-                .FirstOrDefaultAsync(f => f.Feedback_Id == id && f.UserId == userId);
+                .FirstOrDefaultAsync(f => f.Feedback_Id == id && f.User_Id == userId);
 
             if (feedback == null)
             {
@@ -112,8 +114,9 @@ namespace CarDelership.Controllers
         {
             var userId = GetCurrentUserId();
 
+            // ✅ ИСПРАВЛЕНО: используем правильное имя поля User_Id
             var feedback = await _context.Feedbacks
-                .FirstOrDefaultAsync(f => f.Feedback_Id == id && f.UserId == userId);
+                .FirstOrDefaultAsync(f => f.Feedback_Id == id && f.User_Id == userId);
 
             if (feedback != null)
             {
@@ -131,8 +134,9 @@ namespace CarDelership.Controllers
         {
             var userId = GetCurrentUserId();
 
+            // ✅ ИСПРАВЛЕНО: используем правильное имя поля User_Id
             var hasUnread = await _context.Feedbacks
-                .AnyAsync(f => f.UserId == userId &&
+                .AnyAsync(f => f.User_Id == userId &&
                                f.IsProcessed == true &&
                                f.IsClosed == false &&
                                f.IsClosedByUser == false &&

@@ -8,7 +8,7 @@ namespace CarDelership.Models
         [Key]
         public int Feedback_Id { get; set; }
 
-        public int? UserId { get; set; }
+        public int? User_Id { get; set; }
 
         [StringLength(100)]
         public string? UserName { get; set; }
@@ -39,7 +39,7 @@ namespace CarDelership.Models
         [StringLength(50)]
         public string? IsReadByUser { get; set; }
 
-        [ForeignKey("UserId")]
+        [ForeignKey("User_Id")]
         public virtual Users? User { get; set; }
     }
 }

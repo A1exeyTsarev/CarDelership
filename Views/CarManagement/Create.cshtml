@@ -25,385 +25,506 @@
                         @Html.AntiForgeryToken()
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Название автомобиля</label>
-                                <input asp-for="Name" class="form-control" required />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Модель</label>
-                                <div class="input-group">
-                                    <select asp-for="model_Id" class="form-select" required id="modelSelect">
-                                        <option value="">Выберите модель</option>
-                                        @if (models != null)
-                                        {
-                                            foreach (var carModel in models)
-                                            {
-                                                <option value="@carModel.Model_Id">@(carModel.Manufacturer?.Name ?? "Нет производителя") - @carModel.Name</option>
-                                            }
-                                        }
-                                    </select>
-                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addModelModal">
-                                        <i class="bi bi-plus-lg"></i> Новая модель
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Цвет</label>
-                                <div class="input-group">
-                                    <select asp-for="Color_Id" class="form-select" id="colorSelect">
-                                        <option value="">Выберите цвет</option>
-                                        @if (colors != null)
-                                        {
-                                            foreach (var colorItem in colors)
-                                            {
-                                                <option value="@colorItem.Color_Id">@colorItem.Name</option>
-                                            }
-                                        }
-                                    </select>
-                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addColorModal">
-                                        <i class="bi bi-plus-lg"></i> Новый цвет
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Цена</label>
-                                <input asp-for="Price" type="number" step="0.01" class="form-control" required />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Цена со скидкой</label>
-                                <input asp-for="DiscountPrice" type="number" step="0.01" class="form-control" />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Год выпуска</label>
-                                <input asp-for="Year" type="number" class="form-control" required />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Пробег (км)</label>
-                                <input asp-for="Mileage" type="number" class="form-control" />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Количество на складе</label>
-                                <input asp-for="Quantity" type="number" class="form-control" required />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Статус</label>
-                                <select asp-for="AvailabilityStatus" class="form-select">
-                                    @if (statuses != null)
-                                    {
-                                        foreach (var statusItem in statuses)
-                                        {
-                                            <option value="@statusItem">@statusItem</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-
                             <div class="col-md-12 mb-3">
-                                <label class="form-label fw-bold">VIN номер</label>
-                                <input asp-for="VIN" class="form-control" />
+                                <label class="form-label fw-bold">Название автомобиля *</label>
+                                <input asp-for="Name" class="form-control" required
+                                       maxlength="100"
+                                       placeholder="Например: BMW X5 2024">
+                                    <small class="text-muted">Максимум 100 символов</small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Модель *</label>
+                                    <div class="input-group">
+                                        <select asp-for="model_Id" class="form-select" required id="modelSelect">
+                                            <option value="">Выберите модель</option>
+                                            @if (models != null)
+                                            {
+                                                foreach (var carModel in models)
+                                                {
+                                                    <option value="@carModel.Model_Id">@(carModel.Manufacturer?.Name ?? "Нет производителя") - @carModel.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addModelModal">
+                                            <i class="bi bi-plus-lg"></i> Новая модель
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Цвет</label>
+                                    <div class="input-group">
+                                        <select asp-for="Color_Id" class="form-select" id="colorSelect">
+                                            <option value="">Выберите цвет</option>
+                                            @if (colors != null)
+                                            {
+                                                foreach (var colorItem in colors)
+                                                {
+                                                    <option value="@colorItem.Color_Id">@colorItem.Name</option>
+                                                }
+                                            }
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addColorModal">
+                                            <i class="bi bi-plus-lg"></i> Новый цвет
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Цена (₽) *</label>
+                                    <input asp-for="Price" type="number" class="form-control" required
+                                           min="0" max="100000000" step="10000"
+                                           placeholder="0">
+                                        <small class="text-muted">от 0 до 100 000 000 ₽</small>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Цена со скидкой (₽)</label>
+                                        <input asp-for="DiscountPrice" type="number" class="form-control"
+                                               min="0" max="100000000" step="10000"
+                                               placeholder="0">
+                                            <small class="text-muted">от 0 до 100 000 000 ₽ (необязательно)</small>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label fw-bold">Год выпуска *</label>
+                                            <input asp-for="Year" type="number" class="form-control" required
+                                                   min="1900" max="2026"
+                                                   placeholder="2024">
+                                                <small class="text-muted">от 1900 до 2026</small>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold">Пробег (км)</label>
+                                                <input asp-for="Mileage" type="number" class="form-control"
+                                                       min="0" max="1000000" step="1000"
+                                                       placeholder="0">
+                                                    <small class="text-muted">от 0 до 1 000 000 км</small>
+                                                </div>
+
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-bold">Количество на складе *</label>
+                                                    <input asp-for="Quantity" type="number" class="form-control" required
+                                                           min="0" max="999" step="1"
+                                                           placeholder="0">
+                                                        <small class="text-muted">от 0 до 999 штук</small>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Статус</label>
+                                                        <select asp-for="AvailabilityStatus" class="form-select">
+                                                            @if (statuses != null)
+                                                            {
+                                                                foreach (var statusItem in statuses)
+                                                                {
+                                                                    <option value="@statusItem">@statusItem</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-md-12 mb-3">
+                                                        <label class="form-label fw-bold">VIN номер</label>
+                                                        <input asp-for="VIN" class="form-control"
+                                                               maxlength="17"
+                                                               placeholder="XTA1111111111111">
+                                                            <small class="text-muted">17 символов</small>
+                                                        </div>
+
+                                                        <div class="col-12 mb-3">
+                                                            <label class="form-label fw-bold">Описание</label>
+                                                            <textarea asp-for="Description" class="form-control" rows="4"
+                                                                      maxlength="2000"
+                                                                      placeholder="Введите описание автомобиля..."></textarea>
+                                                            <small class="text-muted">Максимум 2000 символов</small>
+                                                        </div>
+
+                                                        <div class="col-12 mb-3">
+                                                            <label class="form-label fw-bold">Фотографии</label>
+                                                            <input type="file" name="images" class="form-control" multiple accept="image/*" />
+                                                            <small class="text-muted">Можно выбрать несколько файлов (jpg, png)</small>
+                                                        </div>
+                                                    </div>
+
+                                                    <hr>
+
+                                                    <div class="d-flex gap-2">
+                                                        <button type="submit" class="btn btn-success" id="submitBtn">
+                                                            <i class="bi bi-save"></i> Сохранить
+                                                        </button>
+                                                        <a href="/CarManagement/Index" class="btn btn-outline-secondary">
+                                                            <i class="bi bi-arrow-left"></i> Назад
+                                                        </a>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-12 mb-3">
-                                <label class="form-label fw-bold">Описание</label>
-                                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <!-- Модальные окна (без изменений) -->
+                            <!-- Модальное окно для добавления новой модели -->
+                            <div class="modal fade" id="addModelModal" tabindex="-1" aria-labelledby="addModelModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #000000 100%);">
+                                            <h5 class="modal-title text-white">
+                                                <i class="bi bi-car-front"></i> Добавить новую модель автомобиля
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="newModelForm">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Название модели *</label>
+                                                        <input type="text" id="ModelName" class="form-control" required maxlength="100" />
+                                                        <small class="text-muted">Максимум 100 символов</small>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Производитель</label>
+                                                        <div class="input-group">
+                                                            <select id="Manufacturer_Id" class="form-select">
+                                                                <option value="">Выберите существующего производителя</option>
+                                                                @if (manufacturers != null)
+                                                                {
+                                                                    foreach (var m in manufacturers)
+                                                                    {
+                                                                        <option value="@m.Manufacturer_Id">@m.Name</option>
+                                                                    }
+                                                                }
+                                                            </select>
+                                                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addManufacturerModal">
+                                                                <i class="bi bi-plus-lg"></i>
+                                                            </button>
+                                                        </div>
+                                                        <small class="text-muted">Можно выбрать существующего или добавить нового</small>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Тип кузова *</label>
+                                                        <select id="BodyType_Id" class="form-select" required>
+                                                            <option value="">Выберите тип кузова</option>
+                                                            @if (bodyTypes != null)
+                                                            {
+                                                                foreach (var bt in bodyTypes)
+                                                                {
+                                                                    <option value="@bt.BodyType_Id">@bt.Name</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Тип двигателя *</label>
+                                                        <select id="EngineType_Id" class="form-select" required>
+                                                            <option value="">Выберите тип двигателя</option>
+                                                            @if (engineTypes != null)
+                                                            {
+                                                                foreach (var et in engineTypes)
+                                                                {
+                                                                    <option value="@et.EngineType_Id">@et.Name</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Мощность (л.с.) *</label>
+                                                        <input type="number" id="Power" class="form-control" required
+                                                               min="1" max="2000" step="1"
+                                                               placeholder="150">
+                                                        <small class="text-muted">от 1 до 2000 л.с.</small>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-bold">Коробка передач *</label>
+                                                        <select id="Transmission_Id" class="form-select" required>
+                                                            <option value="">Выберите КПП</option>
+                                                            @if (transmissions != null)
+                                                            {
+                                                                foreach (var t in transmissions)
+                                                                {
+                                                                    <option value="@t.Transmission_Id">@t.Name</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <button type="button" class="btn btn-primary" id="saveModelBtn" style="background-color: #ffc107; border-color: #ffc107; color: #000;">
+                                                <i class="bi bi-save"></i> Сохранить модель
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-12 mb-3">
-                                <label class="form-label fw-bold">Фотографии</label>
-                                <input type="file" name="images" class="form-control" multiple accept="image/*" />
-                                <small class="text-muted">Можно выбрать несколько файлов</small>
+                            <!-- Модальное окно для добавления нового цвета -->
+                            <div class="modal fade" id="addColorModal" tabindex="-1" aria-labelledby="addColorModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #000000 100%);">
+                                            <h5 class="modal-title text-white">
+                                                <i class="bi bi-palette"></i> Добавить новый цвет
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="newColorForm">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Название цвета *</label>
+                                                    <input type="text" id="ColorName" class="form-control" required
+                                                           maxlength="50"
+                                                           placeholder="Например: Белый, Черный, Красный...">
+                                                    <small class="text-muted">Максимум 50 символов</small>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <button type="button" class="btn btn-primary" id="saveColorBtn" style="background-color: #ffc107; border-color: #ffc107; color: #000;">
+                                                <i class="bi bi-save"></i> Сохранить цвет
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <hr>
+                            <!-- Модальное окно для добавления нового производителя -->
+                            <div class="modal fade" id="addManufacturerModal" tabindex="-1" aria-labelledby="addManufacturerModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #000000 100%);">
+                                            <h5 class="modal-title text-white">
+                                                <i class="bi bi-building"></i> Добавить нового производителя
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="newManufacturerForm">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Название производителя *</label>
+                                                    <input type="text" id="ManufacturerName" class="form-control" required
+                                                           maxlength="100"
+                                                           placeholder="Например: Toyota, BMW, Mercedes...">
+                                                    <small class="text-muted">Максимум 100 символов</small>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Страна *</label>
+                                                    <select id="Country_Id" class="form-select" required>
+                                                        <option value="">Выберите страну</option>
+                                                        @if (ViewBag.Countries != null)
+                                                        {
+                                                            foreach (var country in ViewBag.Countries as IEnumerable<CarDelership.Models.Country>)
+                                                            {
+                                                                <option value="@country.Country_Id">@country.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Описание</label>
+                                                    <textarea id="ManufacturerDescription" class="form-control" rows="3"
+                                                              maxlength="500"
+                                                              placeholder="Краткое описание производителя..."></textarea>
+                                                    <small class="text-muted">Максимум 500 символов</small>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                            <button type="button" class="btn btn-primary" id="saveManufacturerBtn" style="background-color: #ffc107; border-color: #ffc107; color: #000;">
+                                                <i class="bi bi-save"></i> Сохранить производителя
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-save"></i> Сохранить
-                            </button>
-                            <a href="/CarManagement/Index" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left"></i> Назад
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для добавления новой модели -->
-<div class="modal fade" id="addModelModal" tabindex="-1" aria-labelledby="addModelModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #000000 100%);">
-                <h5 class="modal-title text-white">
-                    <i class="bi bi-car-front"></i> Добавить новую модель автомобиля
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newModelForm">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Название модели *</label>
-                            <input type="text" id="ModelName" class="form-control" required />
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Производитель</label>
-                            <div class="input-group">
-                                <select id="Manufacturer_Id" class="form-select">
-                                    <option value="">Выберите существующего производителя</option>
-                                    @if (manufacturers != null)
-                                    {
-                                        foreach (var m in manufacturers)
-                                        {
-                                            <option value="@m.Manufacturer_Id">@m.Name</option>
+                            @section Scripts {
+                                <script>
+                                    // Валидация цены: скидка не может быть больше обычной цены
+                                    var priceInput = document.querySelector('input[name="Price"]');
+                                    var discountInput = document.querySelector('input[name="DiscountPrice"]');
+        
+                                    function validateDiscount() {
+                                        if (priceInput && discountInput) {
+                                            var price = parseFloat(priceInput.value) || 0;
+                                            var discount = parseFloat(discountInput.value) || 0;
+                
+                                            if (discount > price) {
+                                                discountInput.value = price;
+                                                alert('Цена со скидкой не может быть больше обычной цены');
+                                            }
+                                            if (discount < 0) {
+                                                discountInput.value = 0;
+                                            }
                                         }
                                     }
-                                </select>
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addManufacturerModal">
-                                    <i class="bi bi-plus-lg"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted">Можно выбрать существующего или добавить нового</small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Тип кузова *</label>
-                            <select id="BodyType_Id" class="form-select" required>
-                                <option value="">Выберите тип кузова</option>
-                                @if (bodyTypes != null)
-                                {
-                                    foreach (var bt in bodyTypes)
-                                    {
-                                        <option value="@bt.BodyType_Id">@bt.Name</option>
+        
+                                    if (priceInput) {
+                                        priceInput.addEventListener('change', validateDiscount);
                                     }
-                                }
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Тип двигателя *</label>
-                            <select id="EngineType_Id" class="form-select" required>
-                                <option value="">Выберите тип двигателя</option>
-                                @if (engineTypes != null)
-                                {
-                                    foreach (var et in engineTypes)
-                                    {
-                                        <option value="@et.EngineType_Id">@et.Name</option>
+                                    if (discountInput) {
+                                        discountInput.addEventListener('change', validateDiscount);
                                     }
-                                }
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Мощность (л.с.) *</label>
-                            <input type="number" id="Power" class="form-control" required min="1" max="2000" />
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Коробка передач *</label>
-                            <select id="Transmission_Id" class="form-select" required>
-                                <option value="">Выберите КПП</option>
-                                @if (transmissions != null)
-                                {
-                                    foreach (var t in transmissions)
-                                    {
-                                        <option value="@t.Transmission_Id">@t.Name</option>
+        
+                                    // Валидация перед отправкой формы
+                                    $('#carForm').on('submit', function(e) {
+                                        var name = $('#Name').val();
+                                        if (name && name.length > 100) {
+                                            alert('Название автомобиля не может быть длиннее 100 символов');
+                                            e.preventDefault();
+                                            return false;
+                                        }
+            
+                                        var vin = $('#VIN').val();
+                                        if (vin && vin.length !== 17 && vin.length > 0) {
+                                            alert('VIN номер должен содержать 17 символов');
+                                            e.preventDefault();
+                                            return false;
+                                        }
+            
+                                        return true;
+                                    });
+        
+                                    // Сохранение новой модели
+                                    $('#saveModelBtn').click(function() {
+                                        var formData = {
+                                            Name: $('#ModelName').val(),
+                                            Manufacturer_Id: $('#Manufacturer_Id').val(),
+                                            BodyType_Id: $('#BodyType_Id').val(),
+                                            EngineType_Id: $('#EngineType_Id').val(),
+                                            Power: $('#Power').val(),
+                                            Transmission_Id: $('#Transmission_Id').val()
+                                        };
+            
+                                        if (!formData.Name || !formData.BodyType_Id || !formData.EngineType_Id || !formData.Power || !formData.Transmission_Id) {
+                                            alert('Пожалуйста, заполните все обязательные поля!');
+                                            return;
+                                        }
+            
+                                        $.ajax({
+                                            url: '/CarManagement/CreateModel',
+                                            type: 'POST',
+                                            contentType: 'application/json',
+                                            data: JSON.stringify(formData),
+                                            success: function(response) {
+                                                if (response.success) {
+                                                    $('#modelSelect').append($('<option></option>').val(response.modelId).text(response.modelName));
+                                                    $('#modelSelect').val(response.modelId);
+                                                    $('#addModelModal').modal('hide');
+                                                    $('#newModelForm')[0].reset();
+                                                    showNotification('Модель успешно добавлена!', 'success');
+                                                } else {
+                                                    showNotification('Ошибка: ' + response.message, 'danger');
+                                                }
+                                            },
+                                            error: function() {
+                                                showNotification('Произошла ошибка при добавлении модели', 'danger');
+                                            }
+                                        });
+                                    });
+        
+                                    // Сохранение нового цвета
+                                    $('#saveColorBtn').click(function() {
+                                        var formData = {
+                                            Name: $('#ColorName').val()
+                                        };
+            
+                                        if (!formData.Name) {
+                                            alert('Пожалуйста, введите название цвета!');
+                                            return;
+                                        }
+            
+                                        $.ajax({
+                                            url: '/CarManagement/CreateColor',
+                                            type: 'POST',
+                                            contentType: 'application/json',
+                                            data: JSON.stringify(formData),
+                                            success: function(response) {
+                                                if (response.success) {
+                                                    $('#colorSelect').append($('<option></option>').val(response.colorId).text(response.colorName));
+                                                    $('#colorSelect').val(response.colorId);
+                                                    $('#addColorModal').modal('hide');
+                                                    $('#newColorForm')[0].reset();
+                                                    showNotification('Цвет успешно добавлен!', 'success');
+                                                } else {
+                                                    showNotification('Ошибка: ' + response.message, 'danger');
+                                                }
+                                            },
+                                            error: function() {
+                                                showNotification('Произошла ошибка при добавлении цвета', 'danger');
+                                            }
+                                        });
+                                    });
+        
+                                    // Сохранение нового производителя
+                                    $('#saveManufacturerBtn').click(function() {
+                                        var formData = {
+                                            Name: $('#ManufacturerName').val(),
+                                            Country_Id: parseInt($('#Country_Id').val()),
+                                            Description: $('#ManufacturerDescription').val()
+                                        };
+            
+                                        if (!formData.Name || !formData.Country_Id) {
+                                            alert('Пожалуйста, заполните все обязательные поля!');
+                                            return;
+                                        }
+            
+                                        $.ajax({
+                                            url: '/CarManagement/CreateManufacturer',
+                                            type: 'POST',
+                                            contentType: 'application/json',
+                                            data: JSON.stringify(formData),
+                                            success: function(response) {
+                                                if (response.success) {
+                                                    $('#Manufacturer_Id').append($('<option></option>').val(response.manufacturerId).text(response.manufacturerName));
+                                                    $('#Manufacturer_Id').val(response.manufacturerId);
+                                                    $('#addManufacturerModal').modal('hide');
+                                                    $('#newManufacturerForm')[0].reset();
+                                                    showNotification('Производитель успешно добавлен!', 'success');
+                                                } else {
+                                                    showNotification('Ошибка: ' + response.message, 'danger');
+                                                }
+                                            },
+                                            error: function() {
+                                                showNotification('Произошла ошибка при добавлении производителя', 'danger');
+                                            }
+                                        });
+                                    });
+        
+                                    // Очистка форм при закрытии модальных окон
+                                    $('#addModelModal').on('hidden.bs.modal', function() {
+                                        $('#newModelForm')[0].reset();
+                                        $('#Manufacturer_Id').val('');
+                                    });
+        
+                                    $('#addColorModal').on('hidden.bs.modal', function() {
+                                        $('#newColorForm')[0].reset();
+                                    });
+        
+                                    $('#addManufacturerModal').on('hidden.bs.modal', function() {
+                                        $('#newManufacturerForm')[0].reset();
+                                    });
+        
+                                    // Функция для показа уведомлений
+                                    function showNotification(message, type) {
+                                        var alertDiv = $('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
+                                            '<i class="bi bi-' + (type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill') + ' me-2"></i> ' + message +
+                                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                                            '</div>');
+                                        $('.card-body').prepend(alertDiv);
+                                        setTimeout(function() {
+                                            alertDiv.fadeOut(500, function() { $(this).remove(); });
+                                        }, 5000);
                                     }
-                                }
-                            </select>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" id="saveModelBtn" style="background-color: #ffc107; border-color: #ffc107; color: #000;">
-                    <i class="bi bi-save"></i> Сохранить модель
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для добавления нового цвета (только название) -->
-<div class="modal fade" id="addColorModal" tabindex="-1" aria-labelledby="addColorModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #000000 100%);">
-                <h5 class="modal-title text-white">
-                    <i class="bi bi-palette"></i> Добавить новый цвет
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newColorForm">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Название цвета *</label>
-                        <input type="text" id="ColorName" class="form-control" required placeholder="Например: Белый, Черный, Красный..." />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" id="saveColorBtn" style="background-color: #ffc107; border-color: #ffc107; color: #000;">
-                    <i class="bi bi-save"></i> Сохранить цвет
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модальное окно для добавления нового производителя -->
-<div class="modal fade" id="addManufacturerModal" tabindex="-1" aria-labelledby="addManufacturerModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #000000 100%);">
-                <h5 class="modal-title text-white">
-                    <i class="bi bi-building"></i> Добавить нового производителя
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newManufacturerForm">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Название производителя *</label>
-                        <input type="text" id="ManufacturerName" class="form-control" required placeholder="Например: Toyota, BMW, Mercedes..." />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Страна *</label>
-                        <select id="Country_Id" class="form-select" required>
-                            <option value="">Выберите страну</option>
-                            @if (ViewBag.Countries != null)
-                            {
-                                foreach (var country in ViewBag.Countries as IEnumerable<CarDelership.Models.Country>)
-                                {
-                                    <option value="@country.Country_Id">@country.Name</option>
-                                }
+                                </script>
                             }
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Описание</label>
-                        <textarea id="ManufacturerDescription" class="form-control" rows="3" placeholder="Краткое описание производителя..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary" id="saveManufacturerBtn" style="background-color: #ffc107; border-color: #ffc107; color: #000;">
-                    <i class="bi bi-save"></i> Сохранить производителя
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-        // Сохранение нового цвета (только название)
-        $('#saveColorBtn').click(function() {
-            var formData = {
-                Name: $('#ColorName').val()
-            };
-
-            if (!formData.Name) {
-                alert('Пожалуйста, введите название цвета!');
-                return;
-            }
-
-            $.ajax({
-                url: '/CarManagement/CreateColor',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function(response) {
-                    if (response.success) {
-                        $('#colorSelect').append($('<option></option>').val(response.colorId).text(response.colorName));
-                        $('#colorSelect').val(response.colorId);
-                        $('#addColorModal').modal('hide');
-                        $('#newColorForm')[0].reset();
-                        showNotification('Цвет успешно добавлен!', 'success');
-                    } else {
-                        showNotification('Ошибка: ' + response.message, 'danger');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    showNotification('Произошла ошибка при добавлении цвета: ' + error, 'danger');
-                }
-            });
-        });
-
-        // Сохранение нового производителя
-        $('#saveManufacturerBtn').click(function() {
-            var formData = {
-                Name: $('#ManufacturerName').val(),
-                Country_Id: parseInt($('#Country_Id').val()),
-                Description: $('#ManufacturerDescription').val()
-            };
-
-            if (!formData.Name || !formData.Country_Id) {
-                alert('Пожалуйста, заполните все обязательные поля!');
-                return;
-            }
-
-            $.ajax({
-                url: '/CarManagement/CreateManufacturer',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function(response) {
-                    if (response.success) {
-                        $('#Manufacturer_Id').append($('<option></option>').val(response.manufacturerId).text(response.manufacturerName));
-                        $('#Manufacturer_Id').val(response.manufacturerId);
-                        $('#addManufacturerModal').modal('hide');
-                        $('#newManufacturerForm')[0].reset();
-                        showNotification('Производитель успешно добавлен!', 'success');
-                    } else {
-                        showNotification('Ошибка: ' + response.message, 'danger');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    showNotification('Произошла ошибка при добавлении производителя: ' + error, 'danger');
-                }
-            });
-        });
-
-        // Очистка форм при закрытии модальных окон
-        $('#addModelModal').on('hidden.bs.modal', function() {
-            $('#newModelForm')[0].reset();
-            $('#Manufacturer_Id').val('');
-        });
-
-        $('#addColorModal').on('hidden.bs.modal', function() {
-            $('#newColorForm')[0].reset();
-        });
-
-        $('#addManufacturerModal').on('hidden.bs.modal', function() {
-            $('#newManufacturerForm')[0].reset();
-        });
-
-        // Функция для показа уведомлений
-        function showNotification(message, type) {
-            var alertDiv = $('<div class="alert alert-' + type + ' alert-dismissible fade show" role="alert">' +
-                '<i class="bi bi-' + (type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill') + ' me-2"></i> ' + message +
-                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                '</div>');
-            $('.card-body').prepend(alertDiv);
-            setTimeout(function() {
-                alertDiv.fadeOut(500, function() { $(this).remove(); });
-            }, 5000);
-        }
-    </script>
-}
