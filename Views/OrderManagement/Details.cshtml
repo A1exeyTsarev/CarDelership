@@ -1,0 +1,141 @@
+﻿@model CarDelership.Models.Orders
+@{
+    ViewData["Title"] = $"Детали заказа #{Model.OrderNumber}";
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-box-seam text-warning"></i> Детали заказа #{Model.OrderNumber}
+            </h5>
+        </div>
+        <div class="card-body">
+            <!-- Информация о заказе -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="text-muted small">Номер заказа</label>
+                    <p class="fw-bold mb-0">@Model.OrderNumber</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="text-muted small">Дата создания</label>
+                    <p class="fw-bold mb-0">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="text-muted small">Статус заказа</label>
+                    <p class="fw-bold mb-0">
+                        <span class="badge bg-@(Model.OrderStatus?.Name == "Завершен" ? "success" :
+                                                                                                         Model.OrderStatus?.Name == "Отменен" ? "danger" :
+                                                                                                         Model.OrderStatus?.Name == "Новый" ? "warning" : "info")">
+                            @Model.OrderStatus?.Name
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <label class="text-muted small">Способ доставки</label>
+                    <p class="fw-bold mb-0">@Model.DeliveryMethod?.Name</p>
+                </div>
+                @if (Model.CompleteDate.HasValue)
+                {
+                    <div class="col-md-6">
+                        <label class="text-muted small">Дата завершения</label>
+                        <p class="fw-bold mb-0">@Model.CompleteDate.Value.ToString("dd.MM.yyyy HH:mm")</p>
+                    </div>
+                }
+            </div>
+
+            <hr />
+
+            <!-- Товары в заказе -->
+            <h6 class="fw-bold mb-3"><i class="bi bi-cart"></i> Состав заказа</h6>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Фото</th>
+                            <th>Автомобиль</th>
+                            <th>Количество</th>
+                            <th>Цена</th>
+                            <th>Сумма</th>
+                        </thead>
+                        <tbody>
+                            @{
+                                var orderItems = ViewBag.OrderItems as List<CarDelership.Models.OrderItems>;
+                            }
+                            @if (orderItems != null && orderItems.Any())
+                            {
+                                foreach (var item in orderItems)
+                                {
+                                    var car = item.Car;
+                                    var image = car?.CarImages?.FirstOrDefault();
+                                    var subtotal = item.PriceAtPurchase * item.Quantity;
+                                    <tr>
+                                        <td>
+                                            @if (image != null)
+                                            {
+                                                <img src="/images/@image.ImageName" alt="@car?.Name" style="width: 60px; height: 45px; object-fit: cover;" class="rounded">
+                                            }
+                                            else
+                                            {
+                                                <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width: 60px; height: 45px;">
+                                                    <i class="bi bi-car-front text-muted"></i>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            <strong>@car?.Name</strong><br>
+                                            <small class="text-muted">@car?.Model?.Manufacturer?.Name @car?.Model?.Name</small>
+                                        </td>
+                                        <td>@item.Quantity шт.</td>
+                                        <td>@item.PriceAtPurchase.ToString("N0") ₽</td>
+                                        <td>@subtotal.ToString("N0") ₽</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Нет данных о товарах</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Итого:</td>
+                                <td class="fw-bold text-primary fs-5">@Model.TotalAmount.ToString("N0") ₽</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <hr />
+                <div class="d-flex gap-2">
+                    <a href="/OrderManagement/Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад к списку
+                    </a>
+    
+                    @if (Model.OrderStatus?.Name == "Новый" || Model.OrderStatus?.Name == "Подтвержден" || Model.OrderStatus?.Name == "В обработке")
+                    {
+                        <form method="post" asp-action="UpdateStatus" asp-route-id="@Model.Order_Id" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="statusId" value="5" />
+                            <button type="submit" class="btn btn-success" onclick="return confirm('Отметить заказ как доставленный?')">
+                                <i class="bi bi-check-circle"></i> Отметить доставленным
+                            </button>
+                        </form>
+        
+                        <!-- ✅ ИСПРАВЛЕННАЯ ФОРМА ОТМЕНЫ -->
+                        <form method="post" asp-action="Cancel" asp-route-id="@Model.Order_Id" class="d-inline" onsubmit="return confirm('Отменить заказ? Товары будут возвращены на склад.')">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Отменить заказ
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+</div>

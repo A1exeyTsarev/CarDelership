@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Controllers/OrderManagementController.cs
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CarDelership.Data;
@@ -6,7 +7,7 @@ using CarDelership.Models;
 
 namespace CarDelership.Controllers
 {
-    [Authorize] // Требует авторизации для всех действий
+    [Authorize(Roles = "Администратор,Менеджер")]
     public class OrderManagementController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,22 +17,10 @@ namespace CarDelership.Controllers
             _context = context;
         }
 
-        // Проверка роли менеджера
-        private bool IsManager()
-        {
-            var userRole = HttpContext.Session.GetString("UserRole");
-            return userRole == "Менеджер" || userRole == "Администратор";
-        }
-
         // GET: /OrderManagement/Index
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            if (!IsManager())
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
             var orders = await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderStatus)
@@ -42,18 +31,17 @@ namespace CarDelership.Controllers
             return View(orders);
         }
 
-        // GET: /OrderManagement/UpdateStatus/{id}
+        // GET: /OrderManagement/Details/{id}
         [HttpGet]
-        public async Task<IActionResult> UpdateStatus(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (!IsManager())
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
             var order = await _context.Orders
                 .Include(o => o.User)
                 .Include(o => o.OrderStatus)
+                .Include(o => o.DeliveryMethod)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Car)
+                    .ThenInclude(c => c.CarImages)
                 .FirstOrDefaultAsync(o => o.Order_Id == id);
 
             if (order == null)
@@ -61,67 +49,142 @@ namespace CarDelership.Controllers
                 return NotFound();
             }
 
-            ViewBag.OrderStatuses = await _context.OrderStatuses.ToListAsync();
+            ViewBag.OrderItems = order.OrderItems?.ToList() ?? new List<OrderItems>();
+
             return View(order);
         }
 
         // POST: /OrderManagement/UpdateStatus
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(int orderId, int orderStatusId)
+        public async Task<IActionResult> UpdateStatus(int id, int statusId)
         {
-            if (!IsManager())
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
+            var order = await _context.Orders
+                .Include(o => o.OrderStatus)
+                .FirstOrDefaultAsync(o => o.Order_Id == id);
 
-            var order = await _context.Orders.FindAsync(orderId);
             if (order == null)
             {
                 TempData["Error"] = "Заказ не найден";
                 return RedirectToAction("Index");
             }
 
-            var oldStatus = await _context.OrderStatuses.FindAsync(order.OrderStatus_Id);
-            var newStatus = await _context.OrderStatuses.FindAsync(orderStatusId);
+            order.OrderStatus_Id = statusId;
 
-            order.OrderStatus_Id = orderStatusId;
-
-            if (newStatus?.Name == "Доставлен" || newStatus?.Name == "Отменен")
+            if (statusId == 5 || statusId == 7) // Доставлен или Завершен
             {
                 order.CompleteDate = DateTime.Now;
             }
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = $"Статус заказа №{order.OrderNumber} изменен с '{oldStatus?.Name}' на '{newStatus?.Name}'";
+            TempData["Success"] = $"Статус заказа #{order.OrderNumber} обновлен на \"{order.OrderStatus?.Name}\"";
             return RedirectToAction("Index");
         }
 
-        // GET: /OrderManagement/Details/{id}
-        [HttpGet]
-        public async Task<IActionResult> Details(int id)
+        // POST: /OrderManagement/Cancel/{id} - ИСПРАВЛЕННЫЙ МЕТОД
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(int id)
         {
-            if (!IsManager())
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
             var order = await _context.Orders
-                .Include(o => o.User)
-                .Include(o => o.OrderStatus)
-                .Include(o => o.DeliveryMethod)
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Car)
-                .ThenInclude(c => c.Model)
                 .FirstOrDefaultAsync(o => o.Order_Id == id);
 
             if (order == null)
             {
-                return NotFound();
+                TempData["Error"] = "Заказ не найден";
+                return RedirectToAction("Index");
             }
 
-            return View(order);
+            // Проверяем, можно ли отменить заказ
+            if (order.OrderStatus_Id == 5 || order.OrderStatus_Id == 6 || order.OrderStatus_Id == 7)
+            {
+                TempData["Error"] = $"Заказ #{order.OrderNumber} нельзя отменить (статус: {order.OrderStatus?.Name})";
+                return RedirectToAction("Index");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Возвращаем товары на склад
+                foreach (var item in order.OrderItems)
+                {
+                    var car = await _context.Cars.FindAsync(item.Car_Id);
+                    if (car != null)
+                    {
+                        car.Quantity += item.Quantity;
+
+                        // Обновляем статус товара
+                        if (car.Quantity <= 0)
+                        {
+                            car.AvailabilityStatus = "Нет в наличии";
+                        }
+                        else if (car.Quantity <= 3)
+                        {
+                            car.AvailabilityStatus = "Под заказ";
+                        }
+                        else
+                        {
+                            car.AvailabilityStatus = "В наличии";
+                        }
+                    }
+                }
+
+                // Меняем статус заказа на "Отменен"
+                order.OrderStatus_Id = 6; // Отменен
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["Success"] = $"Заказ #{order.OrderNumber} успешно отменен. Товары возвращены на склад.";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["Error"] = $"Ошибка при отмене заказа: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // POST: /OrderManagement/Delete (альтернативный метод удаления)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Order_Id == id);
+
+            if (order == null)
+            {
+                TempData["Error"] = "Заказ не найден";
+                return RedirectToAction("Index");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Удаляем позиции заказа
+                _context.OrderItems.RemoveRange(order.OrderItems);
+                // Удаляем сам заказ
+                _context.Orders.Remove(order);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["Success"] = $"Заказ #{order.OrderNumber} удален";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["Error"] = $"Ошибка при удалении: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

@@ -4,6 +4,7 @@ using CarDelership.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarDelership.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416071814_CarDelership37")]
+    partial class CarDelership37
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -610,11 +613,11 @@ namespace CarDelership.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Supply_Id"));
 
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("Car_Id")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status_Id")
                         .HasColumnType("int");
@@ -624,37 +627,13 @@ namespace CarDelership.Migrations
 
                     b.HasKey("Supply_Id");
 
+                    b.HasIndex("Car_Id");
+
                     b.HasIndex("Status_Id");
 
                     b.HasIndex("Supplier_Id");
 
                     b.ToTable("Supplies");
-                });
-
-            modelBuilder.Entity("CarDelership.Models.SupplyItem", b =>
-                {
-                    b.Property<int>("SupplyItem_Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SupplyItem_Id"));
-
-                    b.Property<int>("Car_Id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Supply_Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("SupplyItem_Id");
-
-                    b.HasIndex("Car_Id");
-
-                    b.HasIndex("Supply_Id");
-
-                    b.ToTable("SupplyItems");
                 });
 
             modelBuilder.Entity("CarDelership.Models.Tags", b =>
@@ -964,6 +943,12 @@ namespace CarDelership.Migrations
 
             modelBuilder.Entity("CarDelership.Models.Supply", b =>
                 {
+                    b.HasOne("CarDelership.Models.Cars", "Car")
+                        .WithMany()
+                        .HasForeignKey("Car_Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CarDelership.Models.StatusSupply", "StatusSupply")
                         .WithMany("Supplies")
                         .HasForeignKey("Status_Id")
@@ -976,28 +961,11 @@ namespace CarDelership.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Car");
+
                     b.Navigation("StatusSupply");
 
                     b.Navigation("Supplier");
-                });
-
-            modelBuilder.Entity("CarDelership.Models.SupplyItem", b =>
-                {
-                    b.HasOne("CarDelership.Models.Cars", "Car")
-                        .WithMany()
-                        .HasForeignKey("Car_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CarDelership.Models.Supply", "Supply")
-                        .WithMany("SupplyItems")
-                        .HasForeignKey("Supply_Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Car");
-
-                    b.Navigation("Supply");
                 });
 
             modelBuilder.Entity("CarDelership.Models.Users", b =>
@@ -1096,11 +1064,6 @@ namespace CarDelership.Migrations
             modelBuilder.Entity("CarDelership.Models.Suppliers", b =>
                 {
                     b.Navigation("Supplies");
-                });
-
-            modelBuilder.Entity("CarDelership.Models.Supply", b =>
-                {
-                    b.Navigation("SupplyItems");
                 });
 
             modelBuilder.Entity("CarDelership.Models.Tags", b =>

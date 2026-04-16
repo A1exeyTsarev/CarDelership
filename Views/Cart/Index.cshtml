@@ -13,11 +13,19 @@
                     <h5 class="mb-0">🛒 Корзина (@Model.Count() товаров)</h5>
                 </div>
                 <div class="card-body">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
                     @if (!Model.Any())
                     {
                         <div class="text-center py-5">
                             <h3 class="text-muted">🛒 Ваша корзина пуста</h3>
-                            <a href="/Catalog" class="btn btn-primary mt-3">Перейти в каталог</a>
+                            <a href="/Catalog" class="btn btn-yellow mt-3">Перейти в каталог</a>
                         </div>
                     }
                     else
@@ -39,18 +47,23 @@
                                         var car = item.Car;
                                         var price = car?.DiscountPrice > 0 ? car.DiscountPrice : car?.Price;
                                         var subtotal = price * item.Quantity;
+                                        var maxQuantity = car?.Quantity ?? 0;
                                         <tr data-cart-id="@item.ShoppingCart_Id">
                                             <td>
                                                 <strong>@car?.Name</strong><br>
                                                 <small class="text-muted">@car?.Model?.Manufacturer?.Name</small>
+                                                <br>
+                                                <small class="text-muted">В наличии: <span class="stock-quantity">@maxQuantity</span> шт.</small>
                                             </td>
-                                            <td>@price?.ToString("N0") ₽</td>
+                                            <td>
+                                                <span class="item-price" data-price="@price">@price?.ToString("N0") ₽</span>
+                                            </td>
                                             <td>
                                                 <input type="number" class="form-control quantity-input"
-                                                       style="width: 70px;" value="@item.Quantity" min="1"
-                                                       data-cart-id="@item.ShoppingCart_Id" data-price="@price">
+                                                       style="width: 80px;" value="@item.Quantity" min="1" max="@maxQuantity"
+                                                       data-cart-id="@item.ShoppingCart_Id" data-price="@price" data-stock="@maxQuantity">
                                             </td>
-                                            <td class="subtotal">@subtotal?.ToString("N0") ₽</td>
+                                            <td class="subtotal" data-subtotal="@subtotal">@subtotal?.ToString("N0") ₽</td>
                                             <td>
                                                 <button class="btn btn-sm btn-danger remove-item" data-cart-id="@item.ShoppingCart_Id">
                                                     🗑️
@@ -78,8 +91,8 @@
                     <h5 class="mb-0">Оформление заказа</h5>
                 </div>
                 <div class="card-body">
-                    <p>Общая сумма: <strong class="text-primary">@total.ToString("N0") ₽</strong></p>
-                    <a href="/Cart/Checkout" class="btn btn-success w-100 @(!Model.Any() ? "disabled" : "")">
+                    <p>Общая сумма: <strong class="text-primary" id="total-display">@total.ToString("N0") ₽</strong></p>
+                    <a href="/Cart/Checkout" class="btn btn-yellow w-100 @(!Model.Any() ? "disabled" : "")">
                         Оформить заказ →
                     </a>
                 </div>
@@ -87,3 +100,123 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            
+            // Функция для получения числа из форматированной строки
+            function parsePrice(text) {
+                if (!text) return 0;
+                // Убираем символ ₽, пробелы, заменяем запятую на точку
+                let cleaned = text.replace('₽', '').replace(/\s/g, '').replace(',', '.');
+                let number = parseFloat(cleaned);
+                return isNaN(number) ? 0 : number;
+            }
+            
+            // Обновление общей суммы
+            function updateTotal() {
+                let total = 0;
+                $('.subtotal').each(function() {
+                    let text = $(this).text();
+                    let value = parsePrice(text);
+                    total += value;
+                });
+                $('#total-amount').text(total.toLocaleString());
+                $('#total-display').text(total.toLocaleString() + ' ₽');
+            }
+            
+            // Изменение количества
+            $('.quantity-input').on('change', function() {
+                let input = $(this);
+                let cartId = input.data('cart-id');
+                let quantity = parseInt(input.val());
+                let price = parseFloat(input.data('price'));
+                let maxStock = parseInt(input.data('stock'));
+                let row = input.closest('tr');
+                
+                // Проверка на корректность количества
+                if (isNaN(quantity) || quantity < 1) {
+                    quantity = 1;
+                    input.val(1);
+                }
+                
+                // Проверка на максимальное количество
+                if (quantity > maxStock) {
+                    alert(`Недостаточно товара на складе. Доступно: ${maxStock} шт.`);
+                    quantity = maxStock;
+                    input.val(maxStock);
+                }
+                
+                // Проверка что цена - число
+                if (isNaN(price)) {
+                    price = 0;
+                }
+                
+                // Сохраняем текущее значение для отката
+                let originalQuantity = input.data('original-value') || 1;
+                
+                $.ajax({
+                    url: '/Cart/Update',
+                    type: 'POST',
+                    data: { cartId: cartId, quantity: quantity },
+                    success: function(result) {
+                        if (result.success) {
+                            let subtotal = price * quantity;
+                            row.find('.subtotal').text(subtotal.toLocaleString() + ' ₽');
+                            row.find('.subtotal').data('subtotal', subtotal);
+                            updateTotal();
+                            input.data('original-value', quantity);
+                        } else if (result.message) {
+                            alert(result.message);
+                            input.val(originalQuantity);
+                        } else {
+                            alert('Ошибка при обновлении количества');
+                            input.val(originalQuantity);
+                        }
+                    },
+                    error: function() {
+                        alert('Ошибка при обновлении количества');
+                        input.val(originalQuantity);
+                    }
+                });
+            });
+            
+            // Сохраняем оригинальное значение при загрузке
+            $('.quantity-input').each(function() {
+                $(this).data('original-value', $(this).val());
+            });
+            
+            // Удаление товара из корзины
+            $('.remove-item').click(function() {
+                let cartId = $(this).data('cart-id');
+                let row = $(this).closest('tr');
+                
+                if (confirm('Удалить товар из корзины?')) {
+                    $.ajax({
+                        url: '/Cart/Remove',
+                        type: 'POST',
+                        data: { cartId: cartId },
+                        success: function(result) {
+                            if (result.success) {
+                                row.fadeOut(function() {
+                                    $(this).remove();
+                                    updateTotal();
+                                    if ($('tbody tr').length === 0) {
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        },
+                        error: function() {
+                            alert('Ошибка при удалении товара');
+                        }
+                    });
+                }
+            });
+            
+            // Инициализация
+            updateTotal();
+        });
+    </script>
+}

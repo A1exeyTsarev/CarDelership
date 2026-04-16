@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// Models/Supply.cs
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CarDelership.Models
 {
-    // Supply (Поставки)
     public class Supply
     {
         [Key]
@@ -13,19 +13,19 @@ namespace CarDelership.Models
         public int Supplier_Id { get; set; }
 
         [Required]
-        public int Car_Id { get; set; }
-
-        [Required]
         public int Status_Id { get; set; }
 
-        // Внешние ключи (FK)
-        [ForeignKey("Supplier_Id")]
-        public Suppliers? Supplier { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [ForeignKey("Car_Id")]
-        public Cars? Car { get; set; }
+        public DateTime? CompletedAt { get; set; }
+
+        [ForeignKey("Supplier_Id")]
+        public virtual Suppliers? Supplier { get; set; }
 
         [ForeignKey("Status_Id")]
-        public StatusSupply? StatusSupply { get; set; }
+        public virtual StatusSupply? StatusSupply { get; set; }
+
+        // Навигационное свойство для позиций поставки
+        public virtual ICollection<SupplyItem>? SupplyItems { get; set; }
     }
 }

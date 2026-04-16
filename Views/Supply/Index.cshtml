@@ -1,0 +1,297 @@
+﻿@model IEnumerable<CarDelership.Models.Supply>
+@{
+    ViewData["Title"] = "Управление поставками";
+    var cars = ViewBag.Cars as IEnumerable<CarDelership.Models.Cars>;
+    var suppliers = ViewBag.Suppliers as IEnumerable<CarDelership.Models.Suppliers>;
+}
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-truck text-warning"></i> Управление поставками
+            </h5>
+        </div>
+        <div class="card-body">
+            <!-- Форма создания поставки с несколькими автомобилями -->
+            <div class="alert alert-info">
+                <h6><i class="bi bi-plus-circle"></i> Создать новую поставку</h6>
+                
+                <div class="alert alert-warning small mb-3">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Внимание!</strong> Максимум <strong>10 автомобилей</strong> в одной поставке (суммарно по всем позициям).
+                </div>
+                
+                <form method="post" asp-action="Create" id="supplyForm" onsubmit="return validateTotalQuantity()">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Поставщик</label>
+                        <select name="supplierId" class="form-select" required>
+                            <option value="">Выберите поставщика</option>
+                            @foreach (var supplier in suppliers)
+                            {
+                                <option value="@supplier.Supplier_Id">@supplier.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Автомобили в поставке</label>
+                        <div id="itemsContainer">
+                            <div class="row mb-2 item-row">
+                                <div class="col-md-8">
+                                    <select name="items[0].CarId" class="form-select" required>
+                                        <option value="">Выберите автомобиль</option>
+                                        @foreach (var car in cars)
+                                        {
+                                            <option value="@car.Car_Id">@car.Name (Остаток: @car.Quantity)</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" name="items[0].Quantity" class="form-control quantity-input"
+                                           placeholder="Кол-во" min="1" max="999" value="1" required />
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-danger remove-item" disabled>✖</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-yellow btn-sm mt-2" id="addItemBtn">
+                            <i class="bi bi-plus-lg"></i> Добавить еще автомобиль
+                        </button>
+                        <div class="mt-2">
+                            <small class="text-muted" id="totalQuantityDisplay">
+                                Всего автомобилей в поставке: <span id="totalQuantity">0</span> / 10
+                            </small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-yellow">
+                        <i class="bi bi-save"></i> Создать поставку
+                    </button>
+                </form>
+            </div>
+
+            <!-- Уведомления -->
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Таблица поставок -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Поставщик</th>
+                            <th>Товары</th>
+                            <th>Статус</th>
+                            <th>Дата создания</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var supply in Model)
+                        {
+                            <tr>
+                                <td>@supply.Supply_Id</td>
+                                <td>@supply.Supplier?.Name</td>
+                                <td>
+                                    @if (supply.SupplyItems != null && supply.SupplyItems.Any())
+                                    {
+                                        <ul class="list-unstyled mb-0">
+                                            @foreach (var item in supply.SupplyItems)
+                                            {
+                                                <li>@item.Car?.Name - @item.Quantity шт.</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Нет товаров</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-@(supply.StatusSupply?.StatusName == "Завершено" ? "success" :
+                                                                                                                                         supply.StatusSupply?.StatusName == "В пути" ? "warning" :
+                                                                                                                                         supply.StatusSupply?.StatusName == "Отменено" ? "danger" : "secondary")">
+                                        @supply.StatusSupply?.StatusName
+                                    </span>
+                                </td>
+                                <td>@supply.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        @if (supply.Status_Id != 3 && supply.Status_Id != 4)
+                                        {
+                                            <form method="post" asp-action="UpdateStatus" style="display: inline;">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="supplyId" value="@supply.Supply_Id" />
+                                                <select name="statusId" class="form-select form-select-sm d-inline-block" style="width: auto;" onchange="this.form.submit()">
+                                                    @if (supply.Status_Id == 1)
+                                                    {
+                                                        <option value="1" selected>Создано</option>
+                                                        <option value="2">В пути</option>
+                                                        <option value="3">Завершено</option>
+                                                        <option value="4">Отменено</option>
+                                                    }
+                                                    else if (supply.Status_Id == 2)
+                                                    {
+                                                        <option value="1">Создано</option>
+                                                        <option value="2" selected>В пути</option>
+                                                        <option value="3">Завершено</option>
+                                                        <option value="4">Отменено</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="1">Создано</option>
+                                                        <option value="2">В пути</option>
+                                                        <option value="3">Завершено</option>
+                                                        <option value="4">Отменено</option>
+                                                    }
+                                                </select>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">@supply.StatusSupply?.StatusName</span>
+                                        }
+
+                                        <form method="post" asp-action="Delete" style="display: inline;" onsubmit="return confirm('Удалить поставку?')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="supplyId" value="@supply.Supply_Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let itemIndex = 1;
+        const MAX_QUANTITY = 10;
+        
+        // Функция для подсчета общего количества
+        function updateTotalQuantity() {
+            let total = 0;
+            $('.quantity-input').each(function() {
+                let val = parseInt($(this).val()) || 0;
+                total += val;
+            });
+            $('#totalQuantity').text(total);
+            
+            let display = $('#totalQuantityDisplay');
+            if (total > MAX_QUANTITY) {
+                display.addClass('text-danger');
+                display.html(`Всего автомобилей в поставке: <span id="totalQuantity" class="text-danger fw-bold">${total}</span> / ${MAX_QUANTITY} <span class="text-danger">⚠️ Превышен лимит!</span>`);
+            } else {
+                display.removeClass('text-danger');
+                display.html(`Всего автомобилей в поставке: <span id="totalQuantity">${total}</span> / ${MAX_QUANTITY}`);
+            }
+        }
+        
+        // Валидация перед отправкой формы
+        function validateTotalQuantity() {
+            let total = 0;
+            $('.quantity-input').each(function() {
+                let val = parseInt($(this).val()) || 0;
+                total += val;
+            });
+            
+            if (total === 0) {
+                alert('Добавьте хотя бы один автомобиль');
+                return false;
+            }
+            
+            if (total > MAX_QUANTITY) {
+                alert(`Превышен лимит! В одной поставке максимум ${MAX_QUANTITY} автомобилей. Сейчас указано: ${total} шт.`);
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Следим за изменением количества
+        $(document).on('input', '.quantity-input', function() {
+            let val = parseInt($(this).val()) || 0;
+            if (val < 1) $(this).val(1);
+            if (val > 999) $(this).val(999);
+            updateTotalQuantity();
+        });
+        
+        // Добавление новой строки
+        $('#addItemBtn').click(function() {
+            const newRow = `
+                <div class="row mb-2 item-row">
+                    <div class="col-md-8">
+                        <select name="items[${itemIndex}].CarId" class="form-select" required>
+                            <option value="">Выберите автомобиль</option>
+                            @foreach (var car in cars)
+                            {
+                                    <option value="@car.Car_Id">@car.Name (Остаток: @car.Quantity)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" name="items[${itemIndex}].Quantity" class="form-control quantity-input"
+                               placeholder="Кол-во" min="1" max="999" value="1" required />
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger remove-item">✖</button>
+                    </div>
+                </div>
+            `;
+            $('#itemsContainer').append(newRow);
+            itemIndex++;
+            
+            // Включаем/выключаем кнопки удаления
+            toggleRemoveButtons();
+            updateTotalQuantity();
+        });
+        
+        // Удаление строки
+        $(document).on('click', '.remove-item', function() {
+            $(this).closest('.item-row').remove();
+            toggleRemoveButtons();
+            updateTotalQuantity();
+        });
+        
+        function toggleRemoveButtons() {
+            const rows = $('.item-row');
+            const removeBtns = $('.remove-item');
+            
+            if (rows.length === 1) {
+                removeBtns.prop('disabled', true);
+            } else {
+                removeBtns.prop('disabled', false);
+            }
+        }
+        
+        // Инициализация при загрузке
+        $(document).ready(function() {
+            updateTotalQuantity();
+        });
+    </script>
+}

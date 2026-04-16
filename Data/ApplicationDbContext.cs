@@ -31,6 +31,7 @@ namespace CarDelership.Data
         public DbSet<Cars> Cars { get; set; }
         public DbSet<Suppliers> Suppliers { get; set; }
         public DbSet<Supply> Supplies { get; set; }
+        public DbSet<SupplyItem> SupplyItems { get; set; }
         public DbSet<Users> Users { get; set; }
 
         // Заказы и корзина

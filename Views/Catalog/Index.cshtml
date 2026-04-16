@@ -117,6 +117,14 @@
                 <p class="text-muted mb-0">Найдено: <strong>@Model.TotalCount</strong> автомобилей</p>
             </div>
 
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
             @if (Model.Cars != null && Model.Cars.Any())
             {
                 <div class="row g-4">
@@ -149,42 +157,93 @@
                                     <img src="@imagePath" style="width: 100%; height: 100%; object-fit: cover;" alt="@car.Name">
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">@car.Name</h5>
-                                    <p class="text-muted small">
-                                        @car.Year г.
-                                        @if (car.Mileage > 0)
-                                        {
-                                            <br>@car.Mileage.ToString("N0") 
-                                        }
-                                    </p>
-                                    <div>
-                                        @if (discountPercent > 0)
-                                        {
-                                            <span class="car-old-price">@car.Price.ToString("N0") ₽</span>
-                                            <br />
-                                            <strong class="car-price">@car.DiscountPrice.ToString("N0") ₽</strong>
-                                        }
-                                        else
-                                        {
-                                            <strong class="car-price">@car.Price.ToString("N0") ₽</strong>
-                                        }
-                                    </div>
-                                    
-                                    @if (car.CarTags != null && car.CarTags.Any())
-                                    {
-                                        <div class="mt-2">
-                                            @foreach (var carTag in car.CarTags.Take(2))
-                                            {
-                                                <span class="badge bg-secondary me-1">@carTag.Tag?.Name</span>
-                                            }
-                                        </div>
-                                    }
-                                    
-                                    <div class="d-flex gap-2 mt-3">
-                                        <a href="/Catalog/Details/@car.Car_Id" class="btn btn-yellow flex-grow-1">Подробнее</a>
-                                        <button class="btn btn-outline-yellow add-to-cart-btn" data-car-id="@car.Car_Id">❤️</button>
-                                    </div>
-                                </div>
+    <h5 class="card-title">@car.Name</h5>
+
+    <!-- Количество на складе -->
+    <div class="mb-2">
+        @if (car.Quantity > 0)
+        {
+            if (car.Quantity <= 3)
+            {
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle"></i> Осталось: @car.Quantity шт.
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-success">
+                    <i class="bi bi-check-circle"></i> В наличии: @car.Quantity шт.
+                </span>
+            }
+        }
+        else
+        {
+            <span class="badge bg-danger">
+                <i class="bi bi-x-circle"></i> Нет в наличии
+            </span>
+        }
+    </div>
+    <p class="text-muted small">
+    <i class="bi bi-calendar"></i> @car.Year г.<br>
+    @{
+        if (car.Mileage > 0)
+        {
+            <text><i class="bi bi-speedometer2"></i> Пробег: @car.Mileage.ToString("N0") км</text>
+        }
+        else
+        {
+            <text><i class="bi bi-star text-warning"></i> Новый автомобиль</text>
+        }
+    }
+</p>
+
+   
+
+    <div>
+        @if (discountPercent > 0)
+        {
+            <span class="car-old-price">@car.Price.ToString("N0") ₽</span>
+            <br />
+            <strong class="car-price">@car.DiscountPrice.ToString("N0") ₽</strong>
+        }
+        else
+        {
+            <strong class="car-price">@car.Price.ToString("N0") ₽</strong>
+        }
+    </div>
+
+    @if (car.CarTags != null && car.CarTags.Any())
+    {
+        <div class="mt-2">
+            @foreach (var carTag in car.CarTags.Take(2))
+            {
+                <span class="badge bg-secondary me-1">@carTag.Tag?.Name</span>
+            }
+        </div>
+    }
+
+    <div class="d-flex gap-2 mt-3">
+        <a href="/Catalog/Details/@car.Car_Id" class="btn btn-yellow flex-grow-1">Подробнее</a>
+        @if (car.Quantity > 0)
+        {
+            <button class="btn btn-outline-yellow add-to-cart-btn" data-car-id="@car.Car_Id">
+                <i class="bi bi-cart-plus"></i>
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-outline-secondary" disabled title="Нет в наличии">
+                <i class="bi bi-cart-x"></i>
+            </button>
+        }
+        <button class="btn btn-outline-danger wishlist-btn" data-car-id="@car.Car_Id">
+            <i class="bi bi-heart"></i>
+        </button>
+    </div>
+</div>
+                                
+                                
+                                
                             </div>
                         </div>
                     }
@@ -205,7 +264,8 @@
                                         minPrice = Model.MinPrice,
                                         maxPrice = Model.MaxPrice,
                                         selectedManufacturer = Model.SelectedManufacturer,
-                                        selectedYear = Model.SelectedYear
+                                        selectedYear = Model.SelectedYear,
+                                        selectedTagIds = Model.SelectedTagIds
                                     })">« Предыдущая</a>
                                 </li>
                             }
@@ -220,7 +280,8 @@
                                         minPrice = Model.MinPrice,
                                         maxPrice = Model.MaxPrice,
                                         selectedManufacturer = Model.SelectedManufacturer,
-                                        selectedYear = Model.SelectedYear
+                                        selectedYear = Model.SelectedYear,
+                                        selectedTagIds = Model.SelectedTagIds
                                     })">@i</a>
                                 </li>
                             }
@@ -235,7 +296,8 @@
                                         minPrice = Model.MinPrice,
                                         maxPrice = Model.MaxPrice,
                                         selectedManufacturer = Model.SelectedManufacturer,
-                                        selectedYear = Model.SelectedYear
+                                        selectedYear = Model.SelectedYear,
+                                        selectedTagIds = Model.SelectedTagIds
                                     })">Следующая »</a>
                                 </li>
                             }
@@ -255,3 +317,73 @@
     </div>
 </div>
 
+@section Scripts {
+    <script>
+        // Добавление в корзину
+        $('.add-to-cart-btn').click(function() {
+            var carId = $(this).data('car-id');
+            var button = $(this);
+            var originalHtml = button.html();
+            
+            button.html('<i class="bi bi-hourglass-split"></i>');
+            button.prop('disabled', true);
+            
+            $.ajax({
+                url: '/Cart/Add',
+                type: 'POST',
+                data: { carId: carId, quantity: 1 },
+                success: function(response) {
+                    if (response.success) {
+                        button.html('<i class="bi bi-check-lg"></i>');
+                        setTimeout(function() {
+                            button.html(originalHtml);
+                            button.prop('disabled', false);
+                        }, 2000);
+                    } else {
+                        alert(response.message || 'Ошибка при добавлении');
+                        button.html(originalHtml);
+                        button.prop('disabled', false);
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '/Account/Login';
+                    } else {
+                        alert('Ошибка при добавлении в корзину');
+                    }
+                    button.html(originalHtml);
+                    button.prop('disabled', false);
+                }
+            });
+        });
+        
+        // Добавление в избранное
+        $('.wishlist-btn').click(function() {
+            var carId = $(this).data('car-id');
+            var button = $(this);
+            
+            $.ajax({
+                url: '/Wishlist/Add',
+                type: 'POST',
+                data: { carId: carId },
+                success: function(response) {
+                    if (response.success) {
+                        button.html('<i class="bi bi-heart-fill"></i>');
+                        setTimeout(function() {
+                            button.html('<i class="bi bi-heart"></i>');
+                        }, 2000);
+                    } else {
+                        alert(response.message || 'Ошибка при добавлении');
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '/Account/Login';
+                    } else {
+                        alert('Ошибка при добавлении в избранное');
+                    }
+                }
+            });
+        });
+    </script>
+}

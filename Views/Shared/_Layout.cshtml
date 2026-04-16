@@ -98,6 +98,11 @@
                                                         <i class="bi bi-star"></i> Отзывы
                                                     </a>
                                                 </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="Supply" asp-action="Index">
+                                                        <i class="bi bi-truck"></i> 📦 Поставки
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </li>
                                     }
@@ -232,17 +237,15 @@
                                     }
                                 });
                             }
-        
+
                             // Проверяем каждые 30 секунд
-                            @if (User.Identity.IsAuthenticated)
-                            {
-                                    <text>
-                                            $(document).ready(function() {
-                                                checkUnreadSupport();
-                                                setInterval(checkUnreadSupport, 30000);
-                                            });
-                                    </text>
-                            }
+                            $(document).ready(function() {
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                        @:checkUnreadSupport();
+                                        @:setInterval(checkUnreadSupport, 30000);
+                                }
+                            });
                     </script>
 
                     @await RenderSectionAsync("Scripts", required: false)

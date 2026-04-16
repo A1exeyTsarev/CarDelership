@@ -63,10 +63,22 @@ namespace CarDelership.Controllers
                 return Json(new { success = false, message = "Необходимо авторизоваться" });
             }
 
-            var car = await _context.Cars.FindAsync(carId);
-            if (car == null || car.Quantity < quantity)
+            // Проверка количества
+            if (quantity < 1)
             {
-                return Json(new { success = false, message = "Товар недоступен" });
+                quantity = 1;
+            }
+
+            var car = await _context.Cars.FindAsync(carId);
+            if (car == null)
+            {
+                return Json(new { success = false, message = "Товар не найден" });
+            }
+
+            // Проверяем, достаточно ли товара на складе
+            if (car.Quantity < quantity)
+            {
+                return Json(new { success = false, message = $"Недостаточно товара. В наличии: {car.Quantity} шт." });
             }
 
             var cartItem = await _context.ShoppingCarts
@@ -74,7 +86,13 @@ namespace CarDelership.Controllers
 
             if (cartItem != null)
             {
-                cartItem.Quantity += quantity;
+                // Проверяем, не превышает ли общее количество товар на складе
+                int newQuantity = cartItem.Quantity + quantity;
+                if (car.Quantity < newQuantity)
+                {
+                    return Json(new { success = false, message = $"Недостаточно товара. В наличии: {car.Quantity} шт., в корзине: {cartItem.Quantity} шт." });
+                }
+                cartItem.Quantity = newQuantity;
             }
             else
             {
@@ -108,6 +126,7 @@ namespace CarDelership.Controllers
             }
 
             var cartItem = await _context.ShoppingCarts
+                .Include(c => c.Car)
                 .FirstOrDefaultAsync(c => c.ShoppingCart_Id == cartId && c.User_Id == userId);
 
             if (cartItem != null)
@@ -118,6 +137,11 @@ namespace CarDelership.Controllers
                 }
                 else
                 {
+                    // Проверяем, достаточно ли товара на складе
+                    if (cartItem.Car != null && cartItem.Car.Quantity < quantity)
+                    {
+                        return Json(new { success = false, message = $"Недостаточно товара. В наличии: {cartItem.Car.Quantity} шт." });
+                    }
                     cartItem.Quantity = quantity;
                 }
                 await _context.SaveChangesAsync();
@@ -167,6 +191,16 @@ namespace CarDelership.Controllers
                 return RedirectToAction("Index");
             }
 
+            // Проверяем актуальность количества товаров
+            foreach (var item in cartItems)
+            {
+                if (item.Car != null && item.Car.Quantity < item.Quantity)
+                {
+                    TempData["Error"] = $"Товара \"{item.Car.Name}\" недостаточно на складе. В наличии: {item.Car.Quantity} шт.";
+                    return RedirectToAction("Index");
+                }
+            }
+
             ViewBag.DeliveryMethods = await _context.DeliveryMethods.ToListAsync();
             ViewBag.CartItems = cartItems;
 
@@ -203,7 +237,17 @@ namespace CarDelership.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Вычисляем сумму корзины ОДИН РАЗ
+            // Повторная проверка актуальности количества
+            foreach (var item in cartItems)
+            {
+                if (item.Car != null && item.Car.Quantity < item.Quantity)
+                {
+                    TempData["Error"] = $"Товара \"{item.Car.Name}\" недостаточно на складе. В наличии: {item.Car.Quantity} шт.";
+                    return RedirectToAction("Index");
+                }
+            }
+
+            // Вычисляем сумму корзины с учетом количества
             var cartTotal = cartItems.Sum(item =>
                 (item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0) * item.Quantity);
 
@@ -224,64 +268,77 @@ namespace CarDelership.Controllers
                 return View();
             }
 
-            // Создаем заказ
-            var orderTotal = cartTotal + deliveryMethod.Price;
-            var newStatus = await _context.OrderStatuses.FirstOrDefaultAsync(s => s.Name == "Новый");
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            var order = new Orders
+            try
             {
-                OrderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmss}",
-                OrderStatus_Id = newStatus?.OrderStatus_Id ?? 1,
-                OrderMethod_Id = 2,
-                DeliveryMethod_Id = deliveryMethodId.Value,
-                CreatedDate = DateTime.Now,
-                TotalAmount = orderTotal,
-                User_Id = userId.Value
-            };
+                // Создаем заказ
+                var orderTotal = cartTotal + deliveryMethod.Price;
+                var newStatus = await _context.OrderStatuses.FirstOrDefaultAsync(s => s.Name == "Новый");
 
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
-
-            // Добавляем товары в заказ, уменьшаем количество и обновляем статус
-            foreach (var item in cartItems)
-            {
-                var price = item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0;
-                var orderItem = new OrderItems
+                var order = new Orders
                 {
-                    Order_Id = order.Order_Id,
-                    Car_Id = item.Car_Id,
-                    Quantity = item.Quantity,
-                    PriceAtPurchase = price
+                    OrderNumber = $"ORD-{DateTime.Now:yyyyMMddHHmmss}",
+                    OrderStatus_Id = newStatus?.OrderStatus_Id ?? 1,
+                    OrderMethod_Id = 2,
+                    DeliveryMethod_Id = deliveryMethodId.Value,
+                    CreatedDate = DateTime.Now,
+                    TotalAmount = orderTotal,
+                    User_Id = userId.Value
                 };
-                _context.OrderItems.Add(orderItem);
 
-                if (item.Car != null)
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                // Добавляем товары в заказ, уменьшаем количество и обновляем статус
+                foreach (var item in cartItems)
                 {
-                    // Уменьшаем количество товара
-                    item.Car.Quantity -= item.Quantity;
+                    var price = item.Car?.DiscountPrice > 0 ? item.Car.DiscountPrice : item.Car?.Price ?? 0;
+                    var orderItem = new OrderItems
+                    {
+                        Order_Id = order.Order_Id,
+                        Car_Id = item.Car_Id,
+                        Quantity = item.Quantity,  // ✅ Используем количество из корзины
+                        PriceAtPurchase = price
+                    };
+                    _context.OrderItems.Add(orderItem);
 
-                    // Обновляем статус товара в зависимости от количества
-                    if (item.Car.Quantity <= 0)
+                    if (item.Car != null)
                     {
-                        item.Car.AvailabilityStatus = "Нет в наличии";
-                    }
-                    else if (item.Car.Quantity <= 3)
-                    {
-                        item.Car.AvailabilityStatus = "Под заказ";
-                    }
-                    else
-                    {
-                        item.Car.AvailabilityStatus = "В наличии";
+                        // Уменьшаем количество товара на количество в корзине
+                        item.Car.Quantity -= item.Quantity;
+
+                        // Обновляем статус товара в зависимости от количества
+                        if (item.Car.Quantity <= 0)
+                        {
+                            item.Car.AvailabilityStatus = "Нет в наличии";
+                        }
+                        else if (item.Car.Quantity <= 3)
+                        {
+                            item.Car.AvailabilityStatus = "Под заказ";
+                        }
+                        else
+                        {
+                            item.Car.AvailabilityStatus = "В наличии";
+                        }
                     }
                 }
+
+                // Очищаем корзину
+                _context.ShoppingCarts.RemoveRange(cartItems);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                TempData["Success"] = "Заказ успешно оформлен!";
+                return RedirectToAction("OrderDetails", "Profile", new { id = order.Order_Id });
             }
-
-            // Очищаем корзину
-            _context.ShoppingCarts.RemoveRange(cartItems);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Заказ успешно оформлен!";
-            return RedirectToAction("OrderDetails", "Profile", new { id = order.Order_Id });
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["Error"] = $"Ошибка при оформлении заказа: {ex.Message}";
+                return RedirectToAction("Index");
+            }
         }
 
         // Вспомогательный метод для подготовки представления с ошибкой
